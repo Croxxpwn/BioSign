@@ -9,6 +9,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 BASE_DIR = basedir
 
+SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://biosign_master:Croxx970327@localhost:3306/biosign?charset=utf8mb4'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # FORM
@@ -28,4 +29,5 @@ SUCCESS = 20000
 
 # uploadsets
 
-# UPLOADED_XLS_DEST = 'app/static/res/course'
+UPLOADED_XLS_DEST = 'app/tmp'
+UPLOADED_IMG_DEST = 'app/tmp'
