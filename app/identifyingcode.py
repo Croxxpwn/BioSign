@@ -36,5 +36,5 @@ def drawIdentifyingCode(width=220, height=50):
         text += tx
 
     image = image.filter(ImageFilter.BLUR)
-    image.save('app/tmp/code/' + getSHA256(text), 'jpeg')
+    image.save('app/static/tmp/code/' + getSHA256(text), 'jpeg')
     return image, text

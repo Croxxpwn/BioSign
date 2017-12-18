@@ -58,12 +58,24 @@ class Sign(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # sid
     activity_id = db.Column(db.Integer, db.ForeignKey('Activity.id'))
     signer_id = db.Column(db.Integer, db.ForeignKey('Signer.id'))
+    gps_lon = db.Column(db.Float)
+    gps_lat = db.Column(db.Float)
+    wifiap_mac = db.Column(db.String(64))
     time_sign = db.Column(db.DateTime)
 
     def __init__(self, activity, signer):
         self.activity = activity
         self.signer = signer
         self.time_sign = datetime.now()
+        self.update()
+
+    def setGPSInfo(self, lon, lat):
+        self.gps_lon = lon
+        self.gps_lat = lat
+        self.update()
+
+    def setWifiAPInfo(self, mac):
+        self.wifiap_mac = mac.upper()
         self.update()
 
     def update(self):
@@ -82,11 +94,16 @@ class Activity(db.Model):
     use_gps = db.Column(db.Boolean)
     use_face = db.Column(db.Boolean)
     use_voice = db.Column(db.Boolean)
+    use_wifiap = db.Column(db.Boolean)
+    gps_lon = db.Column(db.Float)
+    gps_lat = db.Column(db.Float)
+    wifiap_bssid = db.Column(db.String(64))
     time_submit = db.Column(db.DateTime)
+
     # relations
     signs = db.relationship('Sign', backref='activity', foreign_keys=[Sign.activity_id])
 
-    def __init__(self, group, name, time_start, time_end, use_gps, use_face, use_voice):
+    def __init__(self, group, name, time_start, time_end, use_gps, use_face, use_voice, use_wifiap):
         self.group = group
         self.name = name
         self.time_start = time_start
@@ -94,7 +111,20 @@ class Activity(db.Model):
         self.use_gps = use_gps
         self.use_face = use_face
         self.use_voice = use_voice
+        self.use_wifiap = use_wifiap
         self.time_submit = datetime.now()
+        self.gps_lon = 0
+        self.gps_lat = 0
+        self.wifiap_bssid = ""
+        self.update()
+
+    def setGPSInfo(self, lon, lat):
+        self.gps_lon = lon
+        self.gps_lat = lat
+        self.update()
+
+    def setWifiAPInfo(self, bssid):
+        self.wifiap_bssid = bssid.upper()
         self.update()
 
     def update(self):
@@ -111,7 +141,7 @@ class Group(db.Model):
     time_submit = db.Column(db.DateTime)
     # relations
     activities = db.relationship('Activity', backref='group', foreign_keys=[Activity.group_id])
-    signers = db.relationship('Signer', backref='group_signed',)
+    signers = db.relationship('Signer', backref='group_signed', )
 
     def __init__(self, creator, name):
         self.creator = creator
@@ -123,17 +153,18 @@ class Group(db.Model):
         db.session.add(self)
         db.session.commit()
 
+
 class Signer(db.Model):
     __tablename__ = 'Signer'
     # columns
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # uid
     id4group = db.Column(db.String(64))
     name = db.Column(db.String(64))  # 昵称
-    group_signed_id = db.Column(db.Integer,db.ForeignKey('Group.id'))
+    group_signed_id = db.Column(db.Integer, db.ForeignKey('Group.id'))
     # statics
     identify = 'Signer'
 
-    def __init__(self,group_signed,id4group,name):
+    def __init__(self, group_signed, id4group, name):
         self.group_signed = group_signed
         self.id4group = id4group
         self.name = name
@@ -191,3 +222,7 @@ class Leader(db.Model):
 
     def get_id(self):
         return self.id
+
+
+if __name__ == '__main__':
+    db.create_all()

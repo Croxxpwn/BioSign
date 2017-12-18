@@ -17,15 +17,14 @@ class test_db(unittest.TestCase):
         leader.setPassword('pw654321')
         self.assertTrue(leader.testPassword('pw654321'))
 
-
     def test_Group(self):
         leader = Leader(u'leader', u'pw123456', u'Leader')
-        group1 = Group(leader,'Group1')
+        group1 = Group(leader, 'Group1')
         for i in range(5):
-            signer = Signer(group1,'group1-'+str(i),"Signer-"+str(i))
+            signer = Signer(group1, 'group1-' + str(i), "Signer-" + str(i))
         signers = Signer.query.all()
         for signer in signers:
-            self.assertTrue(signer.group_signed==group1)
+            self.assertTrue(signer.group_signed == group1)
 
     def test_Activity(self):
         leader = Leader(u'leader', u'pw123456', u'Leader')
@@ -33,9 +32,9 @@ class test_db(unittest.TestCase):
         for i in range(5):
             signer = Signer(group1, 'group1-' + str(i), "Signer-" + str(i))
         signers = Signer.query.all()
-        activity = Activity(group1,'Activity-1',datetime.now(),datetime.now()+timedelta(hours=1),True,True,True)
-        self.assertTrue(activity.group==group1)
-
+        activity = Activity(group1, 'Activity-1', datetime.now(), datetime.now() + timedelta(hours=1), True, True, True,
+                            True)
+        self.assertTrue(activity.group == group1)
 
     def tearDown(self):
         leaders = Leader.query.all()
