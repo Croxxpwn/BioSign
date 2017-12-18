@@ -59,14 +59,14 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/signin', methods=['GET', 'POST'])
-def signin():
-    signinform = SigninForm()
-    if signinform.validate_on_submit():
-        username = signinform.username.data
-        password = signinform.password.data
-        name = signinform.name.data
-        code = signinform.code.data
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    signupform = SignupForm()
+    if signupform.validate_on_submit():
+        username = signupform.username.data
+        password = signupform.password.data
+        name = signupform.name.data
+        code = signupform.code.data
         if 'code_text' in session and code.upper() == session['code_text']:
             leader = Leader.query.filter(Leader.username == username).first()
             if leader is None:
@@ -77,7 +77,7 @@ def signin():
                 flash(u'D该用户名已被注册!')
         else:
             flash(u'D验证码不正确!')
-    return render_template('signin.html', signinform=signinform)
+    return render_template('signup.html', signupform=signupform)
 
 
 # ajax
