@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+</head>
+<body>
+{% for message in get_flashed_messages() %}
+        {{ message }}
+    {% endfor %}
+<form method="post">
+    {{signupform.hidden_tag()}}
+登录邮箱：<input type="email" name="email">
+密码：<input type="password" name="password">
+用户名：<input name="name">
+    <img id="identifyingcode_img" src="#"/>
+验证码：<input name="code" style="text-transform: uppercase">
+    <input type="submit">
+</form>
+</body>
+<script>
+    window.onload = function () {
+        img = document.querySelector("#code");
+        var data = {};
+        var csrftoken = "{{csrf_token()|safe}}"
+        $.ajax({
+            type: 'POST',
+            url: "/ajax/" + "getIdentifyingcode",
+            data: data,
+            dataType: 'json',
+            beforeSend: function(xhr, settings) {
+              xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+            success: function (data) {
+                $('#identifyingcode_img').attr('src',data.code_uri);
+            },
+            error: function (xhr, type) {
+            }
+        });
+    };
+
+
+</script>
+</html>

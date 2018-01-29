@@ -1,14 +1,26 @@
 from app import app, lm
-from flask import render_template, redirect, url_for, jsonify, flash, session
-from flask_login import login_required, login_user, logout_user
+from flask import render_template, redirect, url_for, jsonify, flash, session, g
+from flask_login import login_required, login_user, logout_user, current_user
 from app.identifyingcode import drawIdentifyingCode
 from app.models import *
 from app.forms import *
+import os
 
 # Configs and View for Login
 
 lm.login_view = 'login'
 lm.login_message = u'W请先登录!'
+
+
+@lm.user_loader
+def load_user(user_id):
+    return User.query.filter(User.id == user_id).first()
+
+
+@app.before_request
+def before_request():
+    g.user = current_user
+
 
 # ajax models
 
@@ -24,32 +36,41 @@ def getJsonResponse(status, content):
 
 # app.jinja_env.globals['getOptions_tag1'] = getOptions_tag1
 
+# Test
+
+def renderDebug(url, **kw):
+    if os.path.exists('app/templates/' + url):
+        return render_template(url, **kw)
+    else:
+        return render_template('debug.' + url, **kw)
+
+
 # views
 
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return renderDebug('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     loginform = LoginForm()
     if loginform.validate_on_submit():
-        username = loginform.username.data
+        email = loginform.email.data
         password = loginform.password.data
         remember_me = loginform.remember_me.data
-        leader = Leader.query.filter(Leader.username == username).first()
-        if leader is None:
+        user = User.query.filter(User.email == email).first()
+        if user is None:
             flash(u'W用户名不存在!请先注册!')
         else:
-            if not leader.testPassword(password):
+            if not user.testPassword(password):
                 flash(u'D密码错误!')
             else:
-                login_user(leader, remember_me)
+                login_user(user, remember_me)
                 flash(u'S登录成功!')
                 return redirect(url_for('index'))
-    return render_template('login.html', loginform=loginform)
+    return renderDebug('login.html', loginform=loginform)
 
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -63,21 +84,21 @@ def logout():
 def signup():
     signupform = SignupForm()
     if signupform.validate_on_submit():
-        username = signupform.username.data
+        email = signupform.email.data
         password = signupform.password.data
         name = signupform.name.data
         code = signupform.code.data
         if 'code_text' in session and code.upper() == session['code_text']:
-            leader = Leader.query.filter(Leader.username == username).first()
-            if leader is None:
-                leader = Leader(username, password, name)
+            user = User.query.filter(User.email == email).first()
+            if user is None:
+                user = User(email, password, name)
                 flash(u'S注册成功!请登录!')
                 return redirect(url_for('login'))
             else:
                 flash(u'D该用户名已被注册!')
         else:
             flash(u'D验证码不正确!')
-    return render_template('signup.html', signupform=signupform)
+    return renderDebug('signup.html', signupform=signupform)
 
 
 # ajax
@@ -89,10 +110,10 @@ def getIdentifyingcode():
     return jsonify({'code_uri': code_uri})
 
 
-@app.route('/ajax/validate/username/<username>/unique', methods=['POST'])
-def ajax_validate_username_unique(username):
+@app.route('/ajax/validate/email/<email>/unique', methods=['POST'])
+def ajax_validate_username_unique(email):
     flag = True
-    if Leader.query.filter(Leader.username == username).count() > 0:
+    if User.query.filter(User.email == email).count() > 0:
         flag = False
     res = {'result': flag}
     return getJsonResponse(STATUS_SUCCESS, res)

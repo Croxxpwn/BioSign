@@ -43,6 +43,70 @@ def getMD5(content):
     return MD5.hexdigest()
 
 
+relation_group_signers = db.Table(
+    'relation_group_signers',
+    db.Column('group_id', db.Integer, db.ForeignKey('Group.id')),
+    db.Column('signers_id', db.Integer, db.ForeignKey('User.id'))
+)
+
+
+class Group(db.Model):
+    __tablename__ = 'Group'
+    # columns
+    id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # gid
+    name = db.Column(db.String(32))
+    leader_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
+
+
+class User(db.Model):
+    __tablename__ = 'User'
+    # columns
+    id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # uid
+    email = db.Column(db.String(32), index=True, unique=True)
+    passwordhash = db.Column(db.String(64))
+    name = db.Column(db.String(32))
+    salt = db.Column(db.String(8))
+    # relationships
+    groups_own = db.relationship('Group', backref='leader', foreign_keys=[Group.leader_id])
+    groups_sign = db.relationship('Group', secondary=relation_group_signers,
+                                  backref=db.backref('signers', lazy='dynamic'), lazy='dynamic')
+
+    def __init__(self, email, password, name):
+        self.email = email
+        self.name = name
+        self.setPassword(password, update=False)
+        self.time_submit = datetime.now()
+        self.update()
+
+    def update(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def setPassword(self, password, update=True):
+        self.salt = random_str()
+        self.passwordhash = getSHA256(password + self.salt)
+        self.chpassword = True
+        if update:
+            self.update()
+
+    def testPassword(self, password):
+        return getSHA256(password + self.salt) == self.passwordhash
+
+    # for flask-login
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+
 '''
 relation_group_signers = db.Table(
     'relation_group_signers',
@@ -51,6 +115,7 @@ relation_group_signers = db.Table(
 )
 '''
 
+'''
 
 class Sign(db.Model):
     __tablename__ = 'Sign'
@@ -222,7 +287,4 @@ class Leader(db.Model):
 
     def get_id(self):
         return self.id
-
-
-if __name__ == '__main__':
-    db.create_all()
+'''

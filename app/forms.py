@@ -7,11 +7,12 @@ from app.uploadsets import *
 
 
 class LoginForm(FlaskForm):
-    username = StringField(
-        'username',
+    email = StringField(
+        'email',
         validators=[
-            DataRequired(message='请输用户名!'),
-            Length(4, 16, message='用户名必须在4-16个字符内!')
+            DataRequired(message='请输入登录邮箱!'),
+            Length(1, 32, message='登录邮箱必须在1-32个字符内!'),
+            Email(message='请输入合法的邮箱帐号!')
         ]
     )
     password = PasswordField(
@@ -25,11 +26,12 @@ class LoginForm(FlaskForm):
 
 
 class SignupForm(FlaskForm):
-    username = StringField(
-        'username',
+    email = StringField(
+        'email',
         validators=[
-            DataRequired(message='请输用户名!'),
-            Length(4, 16, message='用户名必须在4-16个字符内!')
+            DataRequired(message='请输入登录邮箱!'),
+            Length(1, 32, message='登录邮箱必须在1-32个字符内!'),
+            Email(message='请输入合法的邮箱帐号!')
         ]
     )
     password = PasswordField(
@@ -43,7 +45,7 @@ class SignupForm(FlaskForm):
         'name',
         validators=[
             DataRequired(message='请输用户名!'),
-            Length(2, 16, message='用户名必须在2-16个字符内!')
+            Length(2, 8, message='用户名必须在2-8个字符内!')
         ]
     )
     code = StringField(
