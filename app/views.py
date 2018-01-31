@@ -28,8 +28,8 @@ def error_handler(e):
     return "Something bad happened", 400
 
 
-def authenticate(id, password):
-    u = User.query.filter(User.id==id).first()
+def authenticate(email, password):
+    u = User.query.filter(User.email==email).first()
     if (u is None):
         error_handler(u'找不到用户')
     else:
@@ -40,8 +40,8 @@ def authenticate(id, password):
 
 
 def identity(payload):
-    id = payload['identity']
-    return User.query.filter(User.id==id).first()
+    email = payload['identity']
+    return User.query.filter(User.email==email).first()
 
 # ajax models
 
