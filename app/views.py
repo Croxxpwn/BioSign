@@ -1,4 +1,4 @@
-from app import app, lm
+from app import app, lm,csrf
 from flask import render_template, redirect, url_for, jsonify, flash, session, g, abort
 from flask_login import login_required, login_user, logout_user, current_user
 from app.identifyingcode import drawIdentifyingCode
@@ -71,11 +71,13 @@ def renderDebug(url, **kw):
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
+    csrf.protect()
     return renderDebug('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    csrf.protect()
     loginform = LoginForm()
     if loginform.validate_on_submit():
         email = loginform.email.data
@@ -97,12 +99,14 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
+    csrf.protect()
     logout_user()
     return redirect(url_for('index'))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    csrf.protect()
     signupform = SignupForm()
     if signupform.validate_on_submit():
         email = signupform.email.data
@@ -125,6 +129,7 @@ def signup():
 @app.route('/group/new', methods=['GET', 'POST'])
 @login_required
 def group_new():
+    csrf.protect()
     groupnewform = GroupNewForm()
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
@@ -142,6 +147,7 @@ def group_new():
 @app.route('/group/<gid>')
 @login_required
 def group(gid):
+    csrf.protect()
     group = Group.query.filter(Group.id == gid).first()
     if group is None:
         abort(404)
@@ -153,6 +159,7 @@ def group(gid):
 # ajax
 @app.route('/ajax/getIdentifyingcode', methods=['POST'])
 def getIdentifyingcode():
+    csrf.protect()
     code_img, code_text = drawIdentifyingCode()
     session['code_text'] = code_text
     code_uri = '/static/tmp/code/' + getSHA256(code_text)
@@ -161,6 +168,7 @@ def getIdentifyingcode():
 
 @app.route('/ajax/validate/email/<email>/unique', methods=['POST'])
 def ajax_validate_username_unique(email):
+    csrf.protect()
     flag = True
     if User.query.filter(User.email == email).count() > 0:
         flag = False
