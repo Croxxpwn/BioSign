@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 lm = LoginManager(app)
-CSRFProtect(app)
+csrf = CSRFProtect(app)
 
 from app import views, models, forms
 
