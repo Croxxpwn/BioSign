@@ -1,10 +1,12 @@
-from app import app, lm,csrf
-from flask import render_template, redirect, url_for, jsonify, flash, session, g, abort
+from app import app, lm, csrf
+from flask import render_template, redirect, url_for, jsonify, flash, session, g, abort, request
 from flask_login import login_required, login_user, logout_user, current_user
+from flask_jwt import jwt_required
 from app.identifyingcode import drawIdentifyingCode
 from app.models import *
 from app.forms import *
 import os
+from functools import wraps
 
 # Configs and View for Login
 
@@ -21,6 +23,7 @@ def load_user(user_id):
 def before_request():
     g.user = current_user
 
+
 # JWT views
 
 def error_handler(e):
@@ -29,7 +32,7 @@ def error_handler(e):
 
 
 def authenticate(email, password):
-    u = User.query.filter(User.email==email).first()
+    u = User.query.filter(User.email == email).first()
     if (u is None):
         error_handler(u'找不到用户')
     else:
@@ -41,7 +44,8 @@ def authenticate(email, password):
 
 def identity(payload):
     email = payload['identity']
-    return User.query.filter(User.email==email).first()
+    return User.query.filter(User.email == email).first()
+
 
 # ajax models
 
@@ -57,6 +61,7 @@ def getJsonResponse(status, content):
 
 app.jinja_env.globals['fun_group_type_int2str'] = fun_group_type_int2str
 
+
 # Test
 
 def renderDebug(url, **kw):
@@ -66,18 +71,44 @@ def renderDebug(url, **kw):
         return render_template('debug.' + url, **kw)
 
 
+# CSRF
+def csrf_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        csrf.protect()
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+'''
+def permission_required(permission):
+    """返回装饰器，装饰器中使用入参 permission
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not permission:
+                print '403'
+                return
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+'''
+
+
 # views
 
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
+@csrf_required
 def index():
-    csrf.protect()
     return renderDebug('index.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
+@csrf_required
 def login():
-    csrf.protect()
     loginform = LoginForm()
     if loginform.validate_on_submit():
         email = loginform.email.data
@@ -97,16 +128,16 @@ def login():
 
 
 @app.route('/logout', methods=['GET', 'POST'])
+@csrf_required
 @login_required
 def logout():
-    csrf.protect()
     logout_user()
     return redirect(url_for('index'))
 
 
 @app.route('/signup', methods=['GET', 'POST'])
+@csrf_required
 def signup():
-    csrf.protect()
     signupform = SignupForm()
     if signupform.validate_on_submit():
         email = signupform.email.data
@@ -127,9 +158,9 @@ def signup():
 
 
 @app.route('/group/new', methods=['GET', 'POST'])
+@csrf_required
 @login_required
 def group_new():
-    csrf.protect()
     groupnewform = GroupNewForm()
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
@@ -145,21 +176,22 @@ def group_new():
 
 
 @app.route('/group/<gid>')
+@csrf_required
 @login_required
 def group(gid):
-    csrf.protect()
     group = Group.query.filter(Group.id == gid).first()
     if group is None:
         abort(404)
-    user = User.query.filter(User.id==current_user.id).first()
+    user = User.query.filter(User.id == current_user.id).first()
     if group.leader is not user:
         abort(403)
-    return renderDebug('group.html',group=group)
+    return renderDebug('group.html', group=group)
 
-# ajax
+
+# Ajax
 @app.route('/ajax/getIdentifyingcode', methods=['POST'])
+@csrf_required
 def getIdentifyingcode():
-    csrf.protect()
     code_img, code_text = drawIdentifyingCode()
     session['code_text'] = code_text
     code_uri = '/static/tmp/code/' + getSHA256(code_text)
@@ -167,10 +199,48 @@ def getIdentifyingcode():
 
 
 @app.route('/ajax/validate/email/<email>/unique', methods=['POST'])
+@csrf_required
 def ajax_validate_username_unique(email):
-    csrf.protect()
     flag = True
     if User.query.filter(User.email == email).count() > 0:
         flag = False
     res = {'result': flag}
     return getJsonResponse(STATUS_SUCCESS, res)
+
+
+# Mobile
+
+@app.route('/mobile/userinfo', methods=['POST'])
+@jwt_required()
+def mobile_userInfo():
+    pass
+
+
+@app.route('/mobile/group/own', methods=['POST'])
+@jwt_required()
+def mobile_group_own():
+    pass
+
+
+@app.route('/mobile/group/sign', methods=['POST'])
+@jwt_required()
+def mobile_group_sign():
+    pass
+
+
+@app.route('/mobile/group/<gid>', methods=['POST'])
+@jwt_required()
+def mobile_group(gid):
+    pass
+
+
+@app.route('/mobile/group/<gid>/event', methods=['POST'])
+@jwt_required()
+def mobile_group_event(gid):
+    pass
+
+
+@app.route('/mobile/group/<gid>/event/<eid>/sign', methods=['POST'])
+@jwt_required()
+def mobile_group_event_sign(gid, eid):
+    pass
