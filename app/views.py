@@ -1,5 +1,5 @@
 from app import app, lm
-from flask import render_template, redirect, url_for, jsonify, flash, session, g
+from flask import render_template, redirect, url_for, jsonify, flash, session, g, abort
 from flask_login import login_required, login_user, logout_user, current_user
 from app.identifyingcode import drawIdentifyingCode
 from app.models import *
@@ -21,6 +21,27 @@ def load_user(user_id):
 def before_request():
     g.user = current_user
 
+# JWT views
+
+def error_handler(e):
+    print(e)
+    return "Something bad happened", 400
+
+
+def authenticate(id, password):
+    u = User.query.filter(User.id==id).first()
+    if (u is None):
+        error_handler(u'找不到用户')
+    else:
+        if (u.testPassword(password)):
+            return u
+        else:
+            error_handler(u'密码不正确')
+
+
+def identity(payload):
+    id = payload['identity']
+    return User.query.filter(User.id==id).first()
 
 # ajax models
 
@@ -34,7 +55,7 @@ def getJsonResponse(status, content):
     return jsonify(data)
 
 
-# app.jinja_env.globals['getOptions_tag1'] = getOptions_tag1
+app.jinja_env.globals['fun_group_type_int2str'] = fun_group_type_int2str
 
 # Test
 
@@ -100,6 +121,34 @@ def signup():
             flash(u'D验证码不正确!')
     return renderDebug('signup.html', signupform=signupform)
 
+
+@app.route('/group/new', methods=['GET', 'POST'])
+@login_required
+def group_new():
+    groupnewform = GroupNewForm()
+    if groupnewform.validate_on_submit():
+        code = groupnewform.code.data
+        if 'code_text' in session and code.upper() == session['code_text']:
+            user = User.query.filter(User.id == current_user.id).first()
+            name = groupnewform.name.data
+            type = groupnewform.type.data
+            group = Group(user, name, type)
+            redirect(url_for('group', gid=group.id))
+        else:
+            flash(u'D验证码不正确!')
+    return renderDebug('newgroup.html', groupnewform=groupnewform)
+
+
+@app.route('/group/<gid>')
+@login_required
+def group(gid):
+    group = Group.query.filter(Group.id == gid).first()
+    if group is None:
+        abort(404)
+    user = User.query.filter(User.id==current_user.id).first()
+    if group.leader is not user:
+        abort(403)
+    return renderDebug('group.html',group=group)
 
 # ajax
 @app.route('/ajax/getIdentifyingcode', methods=['POST'])

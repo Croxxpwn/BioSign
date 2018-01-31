@@ -66,4 +66,15 @@ class GroupNewForm(FlaskForm):
             Length(1, 16, message='小组名必须在2-16个字符内!')
         ]
     )
-    
+    type = IntegerField(
+        'type',
+        validators=[],
+        default=0
+    )
+    code = StringField(
+        'code',
+        validators=[
+            DataRequired(message='请输入验证码!'),
+            Length(4, 4, message='请输入4位验证码！')
+        ]
+    )

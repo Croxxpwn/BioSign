@@ -15,4 +15,5 @@ lm = LoginManager(app)
 CSRFProtect(app)
 
 from app import views, models, forms
-# jwt = JWT(app)
+
+jwt = JWT(app,views.authenticate,views.identity)

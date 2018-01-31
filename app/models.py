@@ -43,6 +43,22 @@ def getMD5(content):
     return MD5.hexdigest()
 
 
+# Statics
+
+group_type_int2str = {
+    0: '其它',
+    1: '课程',
+    2: '活动',
+}
+
+def fun_group_type_int2str(type):
+    if type in group_type_int2str:
+        return group_type_int2str[type]
+    else:
+        return '未知'
+
+# Models
+
 relation_group_signers = db.Table(
     'relation_group_signers',
     db.Column('group_id', db.Integer, db.ForeignKey('Group.id')),
@@ -50,12 +66,75 @@ relation_group_signers = db.Table(
 )
 
 
+class Event(db.Model):
+    __tablename__ = 'Event'
+    id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # eid
+    name = db.Column(db.String(32))
+    dt_start = db.Column(db.DATETIME)
+    dt_end = db.Column(db.DATETIME)
+    use_face = db.Column(db.BOOLEAN)
+    use_voice = db.Column(db.BOOLEAN)
+    use_gps = db.Column(db.BOOLEAN)
+    use_bt = db.Column(db.BOOLEAN)
+    gps_lon = db.Column(db.FLOAT)
+    gps_lat = db.Column(db.FLOAT)
+    bt_ssid = db.Column(db.String(32))
+    group_id = db.Column(db.INTEGER, db.ForeignKey('Group.id'))
+
+    def __init__(self, name, dt_start, dt_end, opt={}):
+        self.name = name
+        self.dt_start = dt_start
+        self.dt_end = dt_end
+        option = {
+            'use_face': False,
+            'use_voice': False,
+            'use_gps': False,
+            'use_bt': False,
+            'gps_lon': 0.0,
+            'gps_lat': 0.0,
+            'bt_ssid': ""
+        }
+        for key, value in opt.items():
+            option[key] = value
+        self.use_face = option['use_face']
+        self.use_voice = option['use_voice']
+        self.use_gps = option['use_gps']
+        self.use_bt = option['use_bt']
+        self.gps_lon = option['gps_lon']
+        self.gps_lat = option['gps_lat']
+        self.bt_ssid = option['bt_ssid']
+        self.update()
+
+    def update(self):
+        db.session.add(self)
+        db.session.commit()
+
+
 class Group(db.Model):
     __tablename__ = 'Group'
     # columns
     id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # gid
     name = db.Column(db.String(32))
+    type = db.Column(db.INTEGER)
     leader_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
+    # static
+    TYPE_UNKNOWN = 0
+    TYPE_CLASS = 1
+    TYPE_ACTIVITY = 2
+
+    def __init__(self, leader, name, type):
+        self.leader = leader
+        self.name = name
+        self.type = type
+        self.update()
+
+    def update(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def signup(self,user):
+        self.signers.append(user)
+        self.update()
 
 
 class User(db.Model):

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+</bod>
+<p>组名：{{group.name}}</p>
+<p>组类型：{{fun_group_type_int2str(group.type)}}</p>
+<p>组长：{{group.leader.name}}</p>
+<p>组成员：</p>
+{% for user in group.signers %}
+    <p>{{user.name}}</p>
+{% endfor %}
+</body>
+</html>

@@ -6,22 +6,22 @@
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
 </head>
 <body>
-{% for message in get_flashed_messages() %}
-        {{ message }}
-    {% endfor %}
 <form method="post">
-    {{signupform.hidden_tag()}}
-登录邮箱：<input type="email" name="email">
-密码：<input type="password" name="password">
-用户名：<input name="name">
+    {{groupnewform.hidden_tag()}}
+    小组名：<input type="text" name="name">
+    小组类型：
+    <select name="type">
+        <option value="0">其他</option>
+        <option value="1">课程</option>
+        <option value="2">活动</option>
+    </select>
     <img id="identifyingcode_img" src="#"/>
-验证码：<input name="code" style="text-transform: uppercase">
+    验证码：<input name="code" style="text-transform: uppercase">
     <input type="submit">
 </form>
 </body>
 <script>
     window.onload = function () {
-        img = document.querySelector("#code");
         var data = {};
         var csrftoken = "{{csrf_token()|safe}}";
         $.ajax({

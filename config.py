@@ -9,7 +9,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 BASE_DIR = basedir
 
-SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://biosign_master:Croxx970327@localhost:3306/biosign?charset=utf8mb4'
+SQLALCHEMY_DATABASE_URI = 'mysql+mysqldb://biosign_master:Croxx970327@123.206.29.146:3306/biosign?charset=utf8mb4'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # FORM
@@ -20,6 +20,7 @@ SECRET_KEY = "04c47cc2f0e4a472a3fff1c19cc96c4e2f2901a1396d6b7e5a993769511ca1e5"
 # JWT
 
 JWT_AUTH_URL_RULE = '/jwt/login'
+JWT_AUTH_USERNAME_KEY = 'email'
 JWT_EXPIRATION_DELTA = datetime.timedelta(hours=1)
 
 # static values
