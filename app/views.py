@@ -1,7 +1,7 @@
 from app import app, lm, csrf
 from flask import render_template, redirect, url_for, jsonify, flash, session, g, abort, request
 from flask_login import login_required, login_user, logout_user, current_user
-from flask_jwt import jwt_required
+from flask_jwt import jwt_required, current_identity
 from app.identifyingcode import drawIdentifyingCode
 from app.models import *
 from app.forms import *
@@ -43,19 +43,19 @@ def authenticate(email, password):
 
 
 def identity(payload):
-    email = payload['identity']
-    return User.query.filter(User.email == email).first()
+    id = payload['identity']
+    return User.query.filter(User.id == id).first()
 
 
-# ajax models
+# JSON models
 
 STATUS_SUCCESS = 200
-STATUS_ACCESS_DENY = 403
+STATUS_ACCESS_DENIED = 403
 STATUS_NOT_FOUND = 404
 
 
 def getJsonResponse(status, content):
-    data = {'status': status, 'content': content}
+    data = {'status_code': status, 'content': content}
     return jsonify(data)
 
 
@@ -79,22 +79,6 @@ def csrf_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
-
-
-'''
-def permission_required(permission):
-    """返回装饰器，装饰器中使用入参 permission
-    """
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not permission:
-                print '403'
-                return
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-'''
 
 
 # views
@@ -213,19 +197,45 @@ def ajax_validate_username_unique(email):
 @app.route('/mobile/userinfo', methods=['POST'])
 @jwt_required()
 def mobile_userInfo():
-    pass
+    user = current_identity
+    data = {
+        'uid': user.id,
+        'email': user.email,
+        'name': user.name,
+    }
+    return getJsonResponse(STATUS_SUCCESS, data)
 
 
 @app.route('/mobile/group/own', methods=['POST'])
 @jwt_required()
 def mobile_group_own():
-    pass
+    user = current_identity
+    groups = sorted(user.groups_own, key=lambda group: group.dt_setup, reverse=True)
+    data = [{
+        'gid': group.id,
+        'name': group.name,
+        'type': group.type,
+        'leader_id': group.leader_id,
+        'leader_email': group.leader.email,
+        'leader_name': group.leader.name,
+    } for group in groups]
+    return getJsonResponse(STATUS_SUCCESS, data)
 
 
 @app.route('/mobile/group/sign', methods=['POST'])
 @jwt_required()
 def mobile_group_sign():
-    pass
+    user = current_identity
+    groups = user.groups_sign.order_by(db.desc(Group.dt_setup)).all()
+    data = [{
+        'gid': group.id,
+        'name': group.name,
+        'type': group.type,
+        'leader_id': group.leader_id,
+        'leader_email': group.leader.email,
+        'leader_name': group.leader.name,
+    } for group in groups]
+    return getJsonResponse(STATUS_SUCCESS, data)
 
 
 @app.route('/mobile/group/<gid>', methods=['POST'])
@@ -237,7 +247,27 @@ def mobile_group(gid):
 @app.route('/mobile/group/<gid>/event', methods=['POST'])
 @jwt_required()
 def mobile_group_event(gid):
-    pass
+    user = current_identity
+    group = Group.query.filter(Group.id == gid).first()
+    if group is None:
+        return getJsonResponse(STATUS_NOT_FOUND, None)
+    if (group.leader_id != user.id) and (not user.isSigned(group)):
+        return getJsonResponse(STATUS_ACCESS_DENIED, None)
+    events = group.events
+    data = [{
+        'eid': event.id,
+        'name': event.name,
+        'dt_start': event.dt_start.strftime("%Y-%m-%d %H:%M:%S"),
+        'dt_end': event.dt_end.strftime("%Y-%m-%d %H:%M:%S"),
+        'use_face':event.use_face,
+        'use_voice':event.use_voice,
+        'use_gps':event.use_gps,
+        'gps_lon':event.gps_lon,
+        'gps_lat':event.gps_lat,
+        'use_bt':event.use_bt,
+        'bt_ssid':event.bt_ssid,
+    } for event in events]
+    return getJsonResponse(STATUS_SUCCESS, data)
 
 
 @app.route('/mobile/group/<gid>/event/<eid>/sign', methods=['POST'])

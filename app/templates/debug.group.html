@@ -7,10 +7,17 @@
 </bod>
 <p>组名：{{group.name}}</p>
 <p>组类型：{{fun_group_type_int2str(group.type)}}</p>
+<p>创建日期：{{group.dt_setup.strftime("%Y-%m-%d %H:%M:%S")}}</p>
 <p>组长：{{group.leader.name}}</p>
 <p>组成员：</p>
 {% for user in group.signers %}
     <p>{{user.name}}</p>
+{% endfor %}
+<p>活动：</p>
+{% for event in group.events %}
+    <p>活动名：{{event.name}}</p>
+    <p>开始时间：{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}</p>
+    <p>结束时间：{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}</p>
 {% endfor %}
 </body>
 </html>

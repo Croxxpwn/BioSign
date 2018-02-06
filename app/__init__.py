@@ -14,6 +14,6 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 csrf = CSRFProtect(app)
 
-from app import views, models, forms
 
+from app import views, models, forms
 jwt = JWT(app,views.authenticate,views.identity)

@@ -51,11 +51,13 @@ group_type_int2str = {
     2: '活动',
 }
 
+
 def fun_group_type_int2str(type):
     if type in group_type_int2str:
         return group_type_int2str[type]
     else:
         return '未知'
+
 
 # Models
 
@@ -81,7 +83,8 @@ class Event(db.Model):
     bt_ssid = db.Column(db.String(32))
     group_id = db.Column(db.INTEGER, db.ForeignKey('Group.id'))
 
-    def __init__(self, name, dt_start, dt_end, opt={}):
+    def __init__(self, group, name, dt_start, dt_end, opt={}):
+        self.group_id = group.id
         self.name = name
         self.dt_start = dt_start
         self.dt_end = dt_end
@@ -117,6 +120,9 @@ class Group(db.Model):
     name = db.Column(db.String(32))
     type = db.Column(db.INTEGER)
     leader_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
+    dt_setup = db.Column(db.DATETIME)
+    # relationships
+    events = db.relationship('Event', backref='group', foreign_keys=[Event.group_id])
     # static
     TYPE_UNKNOWN = 0
     TYPE_CLASS = 1
@@ -126,13 +132,14 @@ class Group(db.Model):
         self.leader = leader
         self.name = name
         self.type = type
+        self.dt_setup = datetime.now()
         self.update()
 
     def update(self):
         db.session.add(self)
         db.session.commit()
 
-    def signup(self,user):
+    def signup(self, user):
         self.signers.append(user)
         self.update()
 
@@ -170,6 +177,12 @@ class User(db.Model):
 
     def testPassword(self, password):
         return getSHA256(password + self.salt) == self.passwordhash
+
+    def isSigned(self, group):
+        if self.groups_sign.filter(Group.id == group.id).count() > 0:
+            return True
+        else:
+            return False
 
     # for flask-login
 
