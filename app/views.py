@@ -5,8 +5,10 @@ from flask_jwt import jwt_required, current_identity
 from app.identifyingcode import drawIdentifyingCode
 from app.models import *
 from app.forms import *
-import os
 from functools import wraps
+from app.userutils import *
+from app.verify import *
+import json
 
 # Configs and View for Login
 
@@ -52,6 +54,7 @@ def identity(payload):
 STATUS_SUCCESS = 200
 STATUS_ACCESS_DENIED = 403
 STATUS_NOT_FOUND = 404
+STATUS_DATA_IILEGAL = 501
 
 
 def getJsonResponse(status, content):
@@ -62,7 +65,7 @@ def getJsonResponse(status, content):
 app.jinja_env.globals['fun_group_type_int2str'] = fun_group_type_int2str
 
 
-# Test
+# DEBUG
 
 def renderDebug(url, **kw):
     if os.path.exists('app/templates/' + url):
@@ -132,6 +135,7 @@ def signup():
             user = User.query.filter(User.email == email).first()
             if user is None:
                 user = User(email, password, name)
+                createUserSpace(user)
                 flash(u'S注册成功!请登录!')
                 return redirect(url_for('login'))
             else:
@@ -170,6 +174,12 @@ def group(gid):
     if group.leader is not user:
         abort(403)
     return renderDebug('group.html', group=group)
+
+@app.route('/verify/face',methods=['GET','POST'])
+def verify_face():
+    path1 = '/home/croxx/test/face1.jpg'
+    path2 = '/home/croxx/test/face2.jpg'
+    return verifyFace(path1,path2)
 
 
 # Ajax
@@ -267,6 +277,47 @@ def mobile_group_event(gid):
         'use_bt':event.use_bt,
         'bt_ssid':event.bt_ssid,
     } for event in events]
+    return getJsonResponse(STATUS_SUCCESS, data)
+
+@app.route('/mobile/group/<gid>/event/new', methods=['POST'])
+@jwt_required()
+def mobile_group_event_new(gid):
+    user = current_identity
+    group = Group.query.filter(Group.id==gid).first()
+    if group is None:
+        return getJsonResponse(STATUS_NOT_FOUND, None)
+    if group.leader_id != user.id:
+        return getJsonResponse(STATUS_ACCESS_DENIED,None)
+    data = request.get_json()
+    print(data)
+    name = data.get('name','untitled')
+    dt_start = datetime.strptime(data.get('dt_start', '0000-01-01 00:00:00'), "%Y-%m-%d %H:%M:%S")
+    dt_end = datetime.strptime(data.get('dt_start', '0000-01-01 00:00:00'), "%Y-%m-%d %H:%M:%S")
+    if dt_start>datetime.now() and dt_end>dt_start:
+        return getJsonResponse(STATUS_DATA_IILEGAL,None)
+    option = {
+        'use_face': data.get('use_face',False),
+        'use_voice': data.get('use_voice',False),
+        'use_gps': data.get('use_gps',False),
+        'use_bt': data.get('use_bt',False),
+        'gps_lon': float(data.get('gps_lon',0.0)),
+        'gps_lat': float(data.get(' gps_lat',0.0)),
+        'bt_ssid': data.get('bt_ssid',''),
+    }
+    event = Event(group,name,dt_start=dt_start,dt_end=dt_end,opt=option)
+    data = {
+        'eid': event.id,
+        'name': event.name,
+        'dt_start': event.dt_start.strftime("%Y-%m-%d %H:%M:%S"),
+        'dt_end': event.dt_end.strftime("%Y-%m-%d %H:%M:%S"),
+        'use_face': event.use_face,
+        'use_voice': event.use_voice,
+        'use_gps': event.use_gps,
+        'gps_lon': event.gps_lon,
+        'gps_lat': event.gps_lat,
+        'use_bt': event.use_bt,
+        'bt_ssid': event.bt_ssid,
+    }
     return getJsonResponse(STATUS_SUCCESS, data)
 
 
