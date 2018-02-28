@@ -1,0 +1,54 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile登录</title>
+{% endblock %}
+
+
+{% block content %}
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <form method="post">
+                {{signupform.hidden_tag()}}
+                <label for="email">邮箱:</label>
+                <input type="email" name="email" id="email" required>
+                <label for="password">密码:</label>
+                <input type="password" name="password" id="password" required>
+                <label for="name">用户名:</label>
+                <input type="text" name="name" id="name" required>
+                <img id="identifyingcode_img" src="#"/>
+                <label for="code">验证码:</label>
+                <input type="text" name="code" id="code" style="text-transform: uppercase">
+                <input type="submit" class="ui-btn ui-corner-all ui-shadow" value="注册">
+            </form>
+            {% for message in get_flashed_messages() %}
+            <p style="color: #F00;">{{message}}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        img = document.querySelector("#code");
+        var data = {};
+        var csrftoken = "{{csrf_token()|safe}}";
+        $.ajax({
+            type: 'POST',
+            url: "/ajax/" + "getIdentifyingcode",
+            data: data,
+            dataType: 'json',
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+            success: function (data) {
+                $('#identifyingcode_img').attr('src', data.code_uri);
+            },
+            error: function (xhr, type) {
+            }
+        });
+    });
+</script>
+{% endblock %}

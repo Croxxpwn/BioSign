@@ -1,0 +1,42 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile登录</title>
+{% endblock %}
+
+
+{% block content %}
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <form method="post">
+                {{eventnewform.hidden_tag()}}
+                <label for="name">活动名称:</label>
+                <input type="text" name="name" id="name" required>
+                <label for="dt_start">开始时间:</label>
+                <input type="datetime-local" name="dt_start" id="dt_start" required>
+                <label for="dt_end">结束时间:</label>
+                <input type="datetime-local" name="dt_end" id="dt_end" required>
+                <label for="use_face">人脸验证:</label>
+                <input type="checkbox" name="use_face" id="use_face">
+                <label for="use_voice">声紋验证:</label>
+                <input type="checkbox" name="use_voice" id="use_voice">
+                <label for="use_bt">蓝牙验证:</label>
+                <input type="checkbox" name="use_bt" id="use_bt">
+                <label for="bt_ssid">MAC地址:</label>
+                <input type="text" name="bt_ssid" id="bt_ssid" disabled>
+                <input type="submit" class="ui-btn ui-corner-all ui-shadow" value="创建">
+            </form>
+            <script>
+                $(document).ready(function () {
+                    $("#bt_ssid").val(nativeJS.getMac());
+                });
+            </script>
+            {% for message in get_flashed_messages() %}
+            <p style="color: #F00;">{{message}}</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

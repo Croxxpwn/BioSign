@@ -1,0 +1,39 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile首页</title>
+{% endblock %}
+
+
+{% block content %}
+
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <img src="/static/mobile/img/icon.jpg" style="width: 100%;height: auto"/>
+        </div>
+        <div class="ui-block-a">
+            <p style="color: lightgray;text-align: center">Biosign 智能签到系统</p>
+        </div>
+        {% if current_user.is_authenticated %}
+        <div class="ui-block-a">
+            <a href="/mobile/group" class="ui-btn ui-corner-all ui-shadow">我的小组</a><br>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow">我的签到</a><br>
+        </div>
+        <div class="ui-block-a">
+            <a href="/mobile/register/face" class="ui-btn ui-corner-all ui-shadow">验证人脸</a><br>
+            <a href="/mobile/register/voice" class="ui-btn ui-corner-all ui-shadow">验证声紋</a><br>
+        </div>
+        {% else %}
+        <div class="ui-block-a">
+            <a href="/mobile/login" class="ui-btn ui-corner-all ui-shadow">登录</a><br>
+        </div>
+        <div class="ui-block-a">
+            <a href="/mobile/signup" class="ui-btn ui-corner-all ui-shadow">注册</a><br>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile登录</title>
+{% endblock %}
+
+
+{% block content %}
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <input type="text" id="hint" value="请上传人脸!" disabled>
+        </div>
+    </div>
+    <div class="ui-grid-a">
+        <div class="ui-block-a">
+            <video id="video" width="150" height="200" autoplay></video>
+        </div>
+        <div class="ui-block-b">
+            <canvas id="canvas" width="150" height="200"></canvas>
+        </div>
+    </div>
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <a href="#" id="snap" class="ui-btn ui-corner-all ui-shadow">拍照并上传</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({video: true}).then(function (stream) {
+            video.src = window.URL.createObjectURL(stream);
+            video.play();
+        });
+    }
+
+    document.getElementById("snap").addEventListener("click", function () {
+        context.drawImage(video, 0, 0, 150, 200);
+        dataURL = canvas.toDataURL('image/jpeg');
+        var data = {'face': dataURL};
+        var csrftoken = "{{csrf_token()|safe}}";
+        $.ajax({
+            type: 'POST',
+            url: "/mobile/ajax/register/face",
+            data: data,
+            dataType: 'json',
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+            success: function (data) {
+                if (data.status_code == 200) {
+                    window.location.href = "/mobile/index";
+                } else {
+                    $("#hint").val("人脸识别失败,请上传清晰人脸!");
+                }
+            },
+            error: function (xhr, type) {
+            }
+        });
+    });
+</script>
+
+{% endblock %}
+
+
+
+
+

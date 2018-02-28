@@ -67,6 +67,35 @@ relation_group_signers = db.Table(
     db.Column('signers_id', db.Integer, db.ForeignKey('User.id'))
 )
 
+class Sign(db.Model):
+    __tablename__ = 'Sign'
+    id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # sid
+    dt_sign = db.Column(db.DATETIME)
+    gps_lon = db.Column(db.FLOAT)
+    gps_lat = db.Column(db.FLOAT)
+    bt_ssid = db.Column(db.String(32))
+    event_id = db.Column(db.INTEGER, db.ForeignKey('Event.id'))
+    signer_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
+
+    def __init__(self,event,signer,opt={}):
+        self.signer = signer
+        self.event = event
+        option = {
+            'gps_lon': 0.0,
+            'gps_lat': 0.0,
+            'bt_ssid': ""
+        }
+        for key, value in opt.items():
+            option[key] = value
+        self.gps_lon = option['gps_lon']
+        self.gps_lat = option['gps_lat']
+        self.bt_ssid = option['bt_ssid']
+        self.dt_sign = datetime.now()
+        self.update()
+
+    def update(self):
+        db.session.add(self)
+        db.session.commit()
 
 class Event(db.Model):
     __tablename__ = 'Event'
@@ -82,6 +111,8 @@ class Event(db.Model):
     gps_lat = db.Column(db.FLOAT)
     bt_ssid = db.Column(db.String(32))
     group_id = db.Column(db.INTEGER, db.ForeignKey('Group.id'))
+    # reloationships
+    signs = db.relationship('Sign', backref='event', foreign_keys=[Sign.event_id])
 
     def __init__(self, group, name, dt_start, dt_end, opt={}):
         self.group_id = group.id
@@ -156,6 +187,7 @@ class User(db.Model):
     groups_own = db.relationship('Group', backref='leader', foreign_keys=[Group.leader_id])
     groups_sign = db.relationship('Group', secondary=relation_group_signers,
                                   backref=db.backref('signers', lazy='dynamic'), lazy='dynamic')
+    signs = db.relationship('Sign', backref='signer', foreign_keys=[Sign.signer_id])
 
     def __init__(self, email, password, name):
         self.email = email
@@ -183,6 +215,12 @@ class User(db.Model):
             return True
         else:
             return False
+
+    def signedEvent(self,event):
+        sign = Sign.query.filter(Sign.signer_id==self.id).filter(Sign.event_id==event.id).first()
+        if sign is not None:
+            return True
+        return False
 
     # for flask-login
 
