@@ -352,6 +352,7 @@ def mobile_ajax_register_face():
         file = open(newpath, 'wb')
         file.write(imgdata)
         file.close()
+        user.registFace()
         return getJsonResponse(STATUS_SUCCESS, None)
     else:
         return getJsonResponse(STATUS_DATA_IILEGAL, None)
@@ -362,23 +363,18 @@ def mobile_ajax_register_face():
 @login_required
 def mobile_ajax_register_voice():
     user = User.query.filter(User.id == current_user.id).first()
-    print(request.form)
-
     voice = request.form.get('voice', default=None)
     if voice is None:
         return getJsonResponse(STATUS_DATA_IILEGAL, None)
-    strs = re.match('^data:audio/wav;base64,', voice)  # 正则匹配出前面的文件类型去掉
-    wavb64 = voice.replace(strs.group(), '')
-    print(voice[:50])
-    print(wavb64[:50])
-    wavdata = base64.b64decode(wavb64)
-    tmpname = random_str(8) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.wav'
-    path = os.path.join('app/static/tmp/voice', tmpname)
+
+    wavdata = base64.b64decode(voice)
+    tmpname = random_str(16) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.wav'
+    path = os.path.join('app/res/' + str(user.id) + '/wav', tmpname)
     file = open(path, 'wb')
     file.write(wavdata)
     file.close()
-    # data:audio/wav;base64,
     if True:
+        user.registVoice()
         return getJsonResponse(STATUS_SUCCESS, None)
     else:
         return getJsonResponse(STATUS_DATA_IILEGAL, None)

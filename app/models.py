@@ -67,6 +67,7 @@ relation_group_signers = db.Table(
     db.Column('signers_id', db.Integer, db.ForeignKey('User.id'))
 )
 
+
 class Sign(db.Model):
     __tablename__ = 'Sign'
     id = db.Column(db.INTEGER, primary_key=True, autoincrement=True)  # sid
@@ -77,7 +78,7 @@ class Sign(db.Model):
     event_id = db.Column(db.INTEGER, db.ForeignKey('Event.id'))
     signer_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
 
-    def __init__(self,event,signer,opt={}):
+    def __init__(self, event, signer, opt={}):
         self.signer = signer
         self.event = event
         option = {
@@ -96,6 +97,7 @@ class Sign(db.Model):
     def update(self):
         db.session.add(self)
         db.session.commit()
+
 
 class Event(db.Model):
     __tablename__ = 'Event'
@@ -183,6 +185,8 @@ class User(db.Model):
     passwordhash = db.Column(db.String(64))
     name = db.Column(db.String(32))
     salt = db.Column(db.String(8))
+    registed_face = db.Column(db.Boolean)
+    registed_voice = db.Column(db.Boolean)
     # relationships
     groups_own = db.relationship('Group', backref='leader', foreign_keys=[Group.leader_id])
     groups_sign = db.relationship('Group', secondary=relation_group_signers,
@@ -195,6 +199,8 @@ class User(db.Model):
         self.setPassword(password, update=False)
         self.time_submit = datetime.now()
         self.update()
+        self.registed_face = False
+        self.registed_voice = False
 
     def update(self):
         db.session.add(self)
@@ -216,11 +222,23 @@ class User(db.Model):
         else:
             return False
 
-    def signedEvent(self,event):
-        sign = Sign.query.filter(Sign.signer_id==self.id).filter(Sign.event_id==event.id).first()
+    def signedEvent(self, event):
+        sign = Sign.query.filter(Sign.signer_id == self.id).filter(Sign.event_id == event.id).first()
         if sign is not None:
             return True
         return False
+
+    def registedFace(self):
+        return self.registed_face
+
+    def registedVoice(self):
+        return self.registed_voice
+
+    def registFace(self):
+        self.registed_face = True
+
+    def registVoice(self):
+        self.registed_voice = True
 
     # for flask-login
 
