@@ -45,7 +45,7 @@
                    class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新活动</a>
                 {% endif %}
                 <h1>活动信息</h1>
-                {% for event in group.events %}
+                {% for event in group.events[::-1] %}
                 {% if own %}
                 <a href="/mobile/event/{{event.id}}" class="ui-btn ui-corner-all ui-shadow">
                     {{event.name}}
