@@ -633,11 +633,14 @@ def mobile_group_event_new(gid):
             'use_bt': use_bt,
             'bt_ssid': bt_ssid,
         }
-        if dt_end > datetime.now():
-            event = Event(group, name, dt_start, dt_end, option)
-            return redirect(url_for("mobile_group_detail", gid=gid))
+        if dt_end > dt_start:
+            if dt_end > datetime.now():
+                event = Event(group, name, dt_start, dt_end, option)
+                return redirect(url_for("mobile_group_detail", gid=gid))
+            else:
+                flash("截止时间需要在当前时间之后!")
         else:
-            flash("截止时间需要在当前时间之后!")
+            flash("截至时间需要再当前时间之前!")
     return render_template('mobile.event_new.html', eventnewform=eventnewform)
 
 
@@ -652,6 +655,10 @@ def mobile_event_sign(eid):
     group = event.group
     if not user.isSigned(group):
         abort(403)
+    if datetime.now() > event.dt_end:
+        return redirect(url_for("mobile_sign_after"))
+    if datetime.now() < event.dt_start:
+        return redirect(url_for("mobile_sign_before"))
     sign = Sign.query.filter(Sign.signer_id == user.id).filter(Sign.event_id == event.id).first()
     if sign is None:
         sign = Sign(event, user)
@@ -666,6 +673,20 @@ def mobile_event_sign(eid):
 @login_required
 def mobile_sign_sucess():
     return render_template("mobile.sign_success.html")
+
+
+@app.route('/mobile/sign/after')
+@csrf_required
+@login_required
+def mobile_sign_after():
+    return render_template("mobile.sign_after.html")
+
+
+@app.route('/mobile/sign/before')
+@csrf_required
+@login_required
+def mobile_sign_before():
+    return render_template("mobile.sign_before.html")
 
 
 @app.route('/mobile/sign')
