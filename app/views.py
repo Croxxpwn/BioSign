@@ -633,8 +633,11 @@ def mobile_group_event_new(gid):
             'use_bt': use_bt,
             'bt_ssid': bt_ssid,
         }
-        event = Event(group, name, dt_start, dt_end, option)
-        return redirect(url_for("mobile_group_detail", gid=gid))
+        if dt_end > datetime.now():
+            event = Event(group, name, dt_start, dt_end, option)
+            return redirect(url_for("mobile_group_detail", gid=gid))
+        else:
+            flash("截止时间需要在当前时间之后!")
     return render_template('mobile.event_new.html', eventnewform=eventnewform)
 
 

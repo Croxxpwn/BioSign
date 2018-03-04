@@ -17,8 +17,16 @@
                 {% for data_group in data_group_own %}
                 <a href="/mobile/group/{{data_group.gid}}"
                    class="ui-btn ui-corner-all ui-shadow ui-icon-arrow-r ui-btn-icon-right">
-                    {{data_group.name}}({{data_group.leader_name}})[{% if data_group.type==0 %}其他{% elif
-                    data_group.type==1 %}课程{% elif data_group.type==2 %}活动{% endif %}]
+                    {{data_group.name}}&nbsp;
+                    组长:{{data_group.leader_name}}&nbsp;
+                    类型:
+                    {% if data_group.type==0 %}
+                    其他
+                    {% elif data_group.type==1 %}
+                    课程
+                    {% elif data_group.type==2 %}
+                    活动
+                    {% endif %}
                 </a>
                 {% endfor %}
             </div>
@@ -27,8 +35,16 @@
                 {% for data_group in data_group_sign %}
                 <a href="/mobile/group/{{data_group.gid}}"
                    class="ui-btn ui-corner-all ui-shadow ui-icon-arrow-r ui-btn-icon-right">
-                    {{data_group.name}}({{data_group.leader_name}})[{% if data_group.type==0 %}其他{% elif
-                    data_group.type==1 %}课程{% elif data_group.type==2 %}活动{% endif %}]
+                    {{data_group.name}}&nbsp;
+                    组长:{{data_group.leader_name}}&nbsp;
+                    类型:
+                    {% if data_group.type==0 %}
+                    其他
+                    {% elif data_group.type==1 %}
+                    课程
+                    {% elif data_group.type==2 %}
+                    活动
+                    {% endif %}
                 </a>
                 {% endfor %}
             </div>
