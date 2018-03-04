@@ -291,7 +291,6 @@ def mobile_ajax_group_event_new(gid):
     if group.leader_id != user.id:
         return getJsonResponse(STATUS_ACCESS_DENIED, None)
     data = request.get_json()
-    print(data)
     name = data.get('name', 'untitled')
     dt_start = datetime.strptime(data.get('dt_start', '0000-01-01 00:00:00'), "%Y-%m-%d %H:%M:%S")
     dt_end = datetime.strptime(data.get('dt_start', '0000-01-01 00:00:00'), "%Y-%m-%d %H:%M:%S")
@@ -340,7 +339,7 @@ def mobile_ajax_register_face():
     strs = re.match('^data:image/(jpeg|png|gif);base64,', face)  # 正则匹配出前面的文件类型去掉
     image = face.replace(strs.group(), '')
     imgdata = base64.b64decode(image)
-    tmpname = random_str(8) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.jpg'
+    tmpname = random_str(16) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.jpg'
     path = os.path.join('app/static/tmp/face', tmpname)
     file = open(path, 'wb')
     file.write(imgdata)
@@ -366,7 +365,6 @@ def mobile_ajax_register_voice():
     voice = request.form.get('voice', default=None)
     if voice is None:
         return getJsonResponse(STATUS_DATA_IILEGAL, None)
-
     wavdata = base64.b64decode(voice)
     tmpname = random_str(16) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.wav'
     path = os.path.join('app/res/' + str(user.id) + '/wav', tmpname)
@@ -374,10 +372,105 @@ def mobile_ajax_register_voice():
     file.write(wavdata)
     file.close()
     if True:
+        abspath_wavdir = os.path.join(os.getcwd(), 'app/res/' + str(user.id) + '/wav')
+        abspath_model = os.path.join(os.getcwd(), 'app/res/' + str(user.id) + '/voice.spk')
+        trainVoiceModel(abspath_wavdir, abspath_model)
         user.registVoice()
+        timesleft = 5 - user.registed_voice_times
+        return getJsonResponse(STATUS_SUCCESS, {'timesleft': timesleft})
+    else:
+        return getJsonResponse(STATUS_DATA_IILEGAL, None)
+
+
+@app.route('/mobile/ajax/auth/voice', methods=['POST'])
+@csrf_required
+@login_required
+def mobile_ajax_auth_voice():
+    user = User.query.filter(User.id == current_user.id).first()
+    if not user.registedVoice():
+        return getJsonResponse(STATUS_ACCESS_DENIED, None)
+    sid = request.form.get('sid', default=-1)
+    voice = request.form.get('voice', default=None)
+    sign = Sign.query.filter(Sign.id == sid).first()
+    if sign is None:
+        abort(404)
+    if sign.signer_id != user.id:
+        abort(403)
+    if voice is None:
+        return getJsonResponse(STATUS_DATA_IILEGAL, None)
+    wavdata = base64.b64decode(voice)
+    tmpname = random_str(16) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.wav'
+    path = os.path.join('app/static/tmp/voice', tmpname)
+    file = open(path, 'wb')
+    file.write(wavdata)
+    file.close()
+    abspath_model = os.path.join(os.getcwd(), 'app/res/' + str(user.id) + '/voice.spk')
+    abspath_sample = os.path.join(os.getcwd(), path)
+    confidence = verifyVoice(abspath_model, abspath_sample)
+    print(confidence)
+    if confidence > 1.5:
+        sign.passVoice()
         return getJsonResponse(STATUS_SUCCESS, None)
     else:
         return getJsonResponse(STATUS_DATA_IILEGAL, None)
+
+
+@app.route('/mobile/ajax/auth/face', methods=['POST'])
+@csrf_required
+@login_required
+def mobile_ajax_auth_face():
+    user = User.query.filter(User.id == current_user.id).first()
+    if not user.registedFace():
+        return getJsonResponse(STATUS_ACCESS_DENIED, None)
+    sid = request.form.get('sid', default=-1)
+    face = request.form.get('face', default=None)
+    sign = Sign.query.filter(Sign.id == sid).first()
+    if sign is None:
+        abort(404)
+    if sign.signer_id != user.id:
+        abort(403)
+    if face is None:
+        return getJsonResponse(STATUS_DATA_IILEGAL, None)
+    strs = re.match('^data:image/(jpeg|png|gif);base64,', face)  # 正则匹配出前面的文件类型去掉
+    image = face.replace(strs.group(), '')
+    imgdata = base64.b64decode(image)
+    tmpname = random_str(16) + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + '.jpg'
+    path = os.path.join('app/static/tmp/face', tmpname)
+    file = open(path, 'wb')
+    file.write(imgdata)
+    file.close()
+    abspath = os.path.join(os.getcwd(), path)
+    modelpath = os.path.join(os.getcwd(), 'app/res/' + str(user.id) + '/face.jpg')
+    confidence = verifyFace(abspath, modelpath)
+    if confidence > 0.9:
+        sign.passFace()
+        return getJsonResponse(STATUS_SUCCESS, None)
+    else:
+        return getJsonResponse(STATUS_DATA_IILEGAL, None)
+
+
+@app.route('/mobile/ajax/auth/bt', methods=['POST'])
+@csrf_required
+@login_required
+def mobile_ajax_auth_bt():
+    user = User.query.filter(User.id == current_user.id).first()
+    # print(request.form)
+    sid = request.form.get('sid', default=-1)
+    btdata = request.form.get('btdata', default=None)
+    sign = Sign.query.filter(Sign.id == sid).first()
+    if sign is None:
+        abort(404)
+    if sign.signer_id != user.id:
+        abort(403)
+    if btdata is None:
+        return getJsonResponse(STATUS_DATA_IILEGAL, None)
+    btjson = json.loads(btdata)
+    adds = btjson['addresses']
+    for add in adds:
+        if add == sign.event.bt_ssid:
+            sign.passBT()
+            return getJsonResponse(STATUS_SUCCESS, None)
+    return getJsonResponse(STATUS_DATA_IILEGAL, None)
 
 
 # Mobile Views
@@ -511,7 +604,6 @@ def mobile_group_detail(gid):
         own = False
     else:
         abort(403)
-
     return render_template('mobile.group_detail.html', own=own, group=group)
 
 
@@ -521,6 +613,7 @@ def mobile_group_detail(gid):
 def mobile_group_event_new(gid):
     user = User.query.filter(User.id == current_user.id).first()
     group = Group.query.filter(Group.id == gid).first()
+    print(request.form)
     if group is None:
         abort(404)
     if group.leader_id != user.id:
@@ -543,3 +636,37 @@ def mobile_group_event_new(gid):
         event = Event(group, name, dt_start, dt_end, option)
         return redirect(url_for("mobile_group_detail", gid=gid))
     return render_template('mobile.event_new.html', eventnewform=eventnewform)
+
+
+@app.route('/mobile/event/<eid>/sign')
+@csrf_required
+@login_required
+def mobile_event_sign(eid):
+    user = User.query.filter(User.id == current_user.id).first()
+    event = Event.query.filter(Event.id == eid).first()
+    if event is None:
+        abort(404)
+    group = event.group
+    if not user.isSigned(group):
+        abort(403)
+    sign = Sign.query.filter(Sign.signer_id == user.id).filter(Sign.event_id == event.id).first()
+    if sign is None:
+        sign = Sign(event, user)
+    # print(sign.isPassFace(), sign.isPassVoice(), sign.isPassBT())
+    if sign.isPass():
+        return redirect(url_for("mobile_sign_sucess"))
+    return render_template("mobile.sign.html", sign=sign)
+
+
+@app.route('/mobile/sign/sucess')
+@csrf_required
+@login_required
+def mobile_sign_sucess():
+    return render_template("mobile.sign_success.html")
+
+
+@app.route('/mobile/sign')
+@csrf_required
+@login_required
+def mobile_sign():
+    return redirect(url_for("mobile_index"))

@@ -75,6 +75,11 @@ class Sign(db.Model):
     gps_lon = db.Column(db.FLOAT)
     gps_lat = db.Column(db.FLOAT)
     bt_ssid = db.Column(db.String(32))
+    pass_face = db.Column(db.Boolean)
+    pass_voice = db.Column(db.Boolean)
+    pass_bt = db.Column(db.Boolean)
+    pass_gps = db.Column(db.Boolean)
+    # ForeignKey
     event_id = db.Column(db.INTEGER, db.ForeignKey('Event.id'))
     signer_id = db.Column(db.INTEGER, db.ForeignKey('User.id'))
 
@@ -92,7 +97,50 @@ class Sign(db.Model):
         self.gps_lat = option['gps_lat']
         self.bt_ssid = option['bt_ssid']
         self.dt_sign = datetime.now()
+        self.pass_face = False
+        self.pass_voice = False
+        self.pass_bt = False
+        self.pass_gps = False
         self.update()
+
+    def passFace(self):
+        self.pass_face = True
+        self.update()
+
+    def passVoice(self):
+        self.pass_voice = True
+        self.update()
+
+    def passBT(self):
+        self.pass_bt = True
+        self.update()
+
+    def passGPS(self):
+        self.pass_gps = True
+        self.update()
+
+    def isPassFace(self):
+        if self.event.use_face and not self.pass_face:
+            return False
+        return True
+
+    def isPassVoice(self):
+        if self.event.use_voice and not self.pass_voice:
+            return False
+        return True
+
+    def isPassGPS(self):
+        if self.event.use_gps and not self.pass_gps:
+            return False
+        return True
+
+    def isPassBT(self):
+        if self.event.use_bt and not self.pass_bt:
+            return False
+        return True
+
+    def isPass(self):
+        return self.isPassFace() and self.isPassVoice() and self.isPassGPS() and self.isPassBT()
 
     def update(self):
         db.session.add(self)
@@ -186,7 +234,7 @@ class User(db.Model):
     name = db.Column(db.String(32))
     salt = db.Column(db.String(8))
     registed_face = db.Column(db.Boolean)
-    registed_voice = db.Column(db.Boolean)
+    registed_voice_times = db.Column(db.INTEGER)
     # relationships
     groups_own = db.relationship('Group', backref='leader', foreign_keys=[Group.leader_id])
     groups_sign = db.relationship('Group', secondary=relation_group_signers,
@@ -200,7 +248,7 @@ class User(db.Model):
         self.time_submit = datetime.now()
         self.update()
         self.registed_face = False
-        self.registed_voice = False
+        self.registed_voice_times = 0
 
     def update(self):
         db.session.add(self)
@@ -222,9 +270,11 @@ class User(db.Model):
         else:
             return False
 
-    def signedEvent(self, event):
+    def hasSignedEvent(self, event):
         sign = Sign.query.filter(Sign.signer_id == self.id).filter(Sign.event_id == event.id).first()
-        if sign is not None:
+        if sign is None:
+            return False
+        if sign.isPass():
             return True
         return False
 
@@ -232,13 +282,15 @@ class User(db.Model):
         return self.registed_face
 
     def registedVoice(self):
-        return self.registed_voice
+        return self.registed_voice_times >= 5
 
     def registFace(self):
         self.registed_face = True
+        self.update()
 
     def registVoice(self):
-        self.registed_voice = True
+        self.registed_voice_times += 1
+        self.update()
 
     # for flask-login
 

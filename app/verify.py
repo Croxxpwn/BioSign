@@ -14,10 +14,17 @@ def verifyFace(samplePath,dataPath):
         confidence = -1
     return confidence
 
-def verifyVoice(samplePath,dataPath):
+def trainVoiceModel(sampleDirPath,modelPath):
     path = current_app.config['VOICEVERIFY_PATH']
-    bin = './vpr'
-    cmd = '%s %s %s' %(bin,samplePath,dataPath)
+    bin = './vpr train'
+    cmd = '%s %s %s' % (bin, sampleDirPath, modelPath)
+    pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, cwd=path)
+    out = pipe.stdout.read()
+
+def verifyVoice(modelPath,samplePath):
+    path = current_app.config['VOICEVERIFY_PATH']
+    bin = './vpr validate'
+    cmd = '%s %s %s' %(bin,modelPath,samplePath)
     pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,cwd=path)
     confidence = pipe.stdout.read()
     try:

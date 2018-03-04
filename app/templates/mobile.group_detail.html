@@ -41,7 +41,8 @@
             </div>
             <div data-role="collapsible" data-collapsed="false">
                 {% if own %}
-                <a href="/mobile/group/{{group.id}}/event/new" class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新活动</a>
+                <a href="/mobile/group/{{group.id}}/event/new"
+                   class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新活动</a>
                 {% endif %}
                 <h1>活动信息</h1>
                 {% for event in group.events %}
@@ -56,6 +57,18 @@
                     [{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}~{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}]
                 </a>
                 {% else %}
+                {% if current_user.hasSignedEvent(event) %}
+                <a href="#" class="ui-btn ui-corner-all ui-shadow">
+                    {{event.name}}
+                    {% if event.use_face %}[Face]{% endif %}
+                    {% if event.use_voice %}[Voice]{% endif %}
+                    {% if event.use_gps %}[GPS]{% endif %}
+                    {% if event.use_bt %}[Bluetooth]{% endif %}(未签到)
+                    <br>
+                    [{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}~{{event.dt_end.strftime("%Y-%m-%d
+                    %H:%M:%S")}}]
+                </a>
+                {% else %}
                 <a href="/mobile/event/{{event.id}}/sign" class="ui-btn ui-corner-all ui-shadow">
                     {{event.name}}
                     {% if event.use_face %}[Face]{% endif %}
@@ -63,8 +76,10 @@
                     {% if event.use_gps %}[GPS]{% endif %}
                     {% if event.use_bt %}[Bluetooth]{% endif %}
                     <br>
-                    [{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}~{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}]
+                    [{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}~{{event.dt_end.strftime("%Y-%m-%d
+                    %H:%M:%S")}}]
                 </a>
+                {% endif %}
                 {% endif %}
                 {% endfor %}
             </div>

@@ -1,0 +1,194 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile登录</title>
+{% endblock %}
+
+
+{% block content %}
+
+{% if not sign.isPassFace() %}
+
+<!-- Face -->
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <input type="text" id="hint4face" value="请上传人脸!" disabled>
+        </div>
+    </div>
+    <div class="ui-grid-a">
+        <div class="ui-block-a">
+            <video id="video" width="150" height="200" autoplay></video>
+        </div>
+        <div class="ui-block-b">
+            <canvas id="canvas" width="150" height="200"></canvas>
+        </div>
+    </div>
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <a href="#" id="snap4face" class="ui-btn ui-corner-all ui-shadow">拍照并上传</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var video = document.getElementById('video');
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({video: true}).then(function (stream) {
+            video.src = window.URL.createObjectURL(stream);
+            video.play();
+        });
+    }
+
+    document.getElementById("snap4face").addEventListener("click", function () {
+        context.drawImage(video, 0, 0, 150, 200);
+        dataURL = canvas.toDataURL('image/jpeg');
+        var data = {'face': dataURL, 'sid': {{sign.id}} };
+        var csrftoken = "{{csrf_token()|safe}}";
+        $.ajax({
+            type: 'POST',
+            url: "/mobile/ajax/auth/face",
+            data: data,
+            dataType: 'json',
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+            success: function (data) {
+                if (data.status_code == 200) {
+                    window.location.reload();
+                } else if (data.status_code == 403) {
+                    $("#hint4face").val("请先注册人脸数据!");
+                } else if (data.status_code == 501) {
+                    $("#hint4face").val("人脸认证失败,请上传清晰人脸!");
+                }
+            },
+            error: function (xhr, type) {
+            }
+        });
+    });
+</script>
+
+{% endif %}
+
+{% if not sign.isPassVoice() %}
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <input type="text" id="hint4voice" value="请朗读并录制如下文本!" disabled>
+        </div>
+    </div>
+
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <a href="#" id="snap4voice" class="ui-btn ui-corner-all ui-shadow">按下录制/松开上传</a>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        $("#snap4voice").on("vmousedown", function () {
+            nativeJS.startRecord();
+        });
+
+        $("#snap4voice").on("vmouseup", function () {
+            base64str = nativeJS.stopRecordAndGetBase64String();
+            ajaxvoicedata(base64str);
+        });
+    });
+
+    function ajaxvoicedata(voice) {
+        var csrftoken = "{{csrf_token()|safe}}";
+        var data = {'voice': voice, 'sid': {{sign.id}} };
+        $.ajax({
+            type: 'POST',
+            url: "/mobile/ajax/auth/voice",
+            data: data,
+            dataType: "json",
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            },
+            success: function (data) {
+                if (data.status_code == 200) {
+                    window.location.reload();
+                } else if (data.status_code == 403) {
+                    $("#hint4voice").val("请先注册声紋数据!");
+                } else if (data.status_code == 501) {
+                    $("#hint4voice").val("声紋认证失败,请重新验证!");
+                }
+
+            },
+            error: function (xhr, type) {
+            }
+        });
+
+    }
+</script>
+
+{% endif %}
+
+{% if not sign.isPassBT() %}
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <input type="text" id="hint4bt" value="请朗读并录制如下文本!" disabled>
+        </div>
+    </div>
+</div>
+
+<div class="ui-grid-solo">
+    <div class="ui-block-a">
+        <a href="#" id="snap4bt" class="ui-btn ui-corner-all ui-shadow">开始验证蓝牙位置</a>
+    </div>
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        $("#snap4bt").click(function (event) {
+            authBT();
+        });
+    });
+
+    function authBT() {
+        $("#hint4bt").val("正在搜索蓝牙信号...");
+        nativeJS.startBluetoothSearch();
+        setInterval(function () {
+            text = nativeJS.getBluetoothAddresses();
+            var csrftoken = "{{csrf_token()|safe}}";
+            var data = {'btdata': text, 'sid': {{sign.id}} };
+            $.ajax({
+                type: 'POST',
+                url: "/mobile/ajax/auth/bt",
+                data: data,
+                dataType: "json",
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                },
+                success: function (data) {
+                    if (data.status_code == 200) {
+                        window.location.reload();
+                    }
+                },
+                error: function (xhr, type) {
+                }
+            });
+        }, 2000);
+    }
+</script>
+
+{% endif %}
+
+{% endblock %}
+
+
+
+
+

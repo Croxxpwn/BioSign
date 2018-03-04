@@ -49,7 +49,11 @@
             },
             success: function (data) {
                 if (data.status_code == 200) {
-                    window.location.href = "/mobile/index";
+                    timesleft = data.content.timesleft;
+                    $("#hint").val("还剩" + timesleft + "次!");
+                    if (timesleft <= 0) {
+                        window.location.href = "/mobile/index";
+                    }
                 } else {
                     $("#hint").val("人脸识别失败,请上传清晰人脸!");
                 }
