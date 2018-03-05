@@ -36,7 +36,7 @@
                 <ul data-role="listview" data-inset="true">
                     {% for event in events_all %}
                     <li>
-                        <a href="#">
+                        <a href="/mobile/event/{{event.id}}/sign">
                             <img src="/static/mobile/img/sign.jpeg"/>
                             <h3>
                                 {{event.name}}

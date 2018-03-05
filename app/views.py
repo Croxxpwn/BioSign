@@ -605,6 +605,7 @@ def mobile_group_detail(gid):
         own = False
     else:
         abort(403)
+    print(own)
     return render_template('mobile.group_detail.html', own=own, group=group)
 
 
