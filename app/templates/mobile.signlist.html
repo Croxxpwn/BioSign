@@ -1,0 +1,65 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<title>Biosign Mobile首页</title>
+{% endblock %}
+
+
+{% block content %}
+
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui-block-a">
+            <div data-role="collapsible" data-collapsed="false">
+                <h1>正在签到的活动</h1>
+                <ul data-role="listview" data-inset="true">
+                    {% for event in events_signing %}
+                    <li>
+                        <a href="/mobile/event/{{event.id}}/sign">
+                            <img src="/static/mobile/img/sign.jpeg"/>
+                            <h2>{{event.name}}
+                                验证方式:
+                                {% if event.use_face %}[人脸]{% endif %}
+                                {% if event.use_voice %}[声紋{% endif %}
+                                {% if event.use_gps %}[GPS]{% endif %}
+                                {% if event.use_bt %}[蓝牙]{% endif %}
+                            </h2>
+                            <p>
+                                {{event.dt_start.strftime("%Y/%m/%d %H:%M")}}
+                                ~
+                                {{event.dt_end.strftime("%Y/%m/%d %H:%M")}}
+                            </p>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div data-role="collapsible" data-collapsed="false">
+                <h1>所有活动</h1>
+                <ul data-role="listview" data-inset="true">
+                    {% for event in events_all %}
+                    <li>
+                        <a href="#">
+                            <img src="/static/mobile/img/sign.jpeg"/>
+                            <h2>{{event.name}}
+                                验证方式:
+                                {% if event.use_face %}[人脸]{% endif %}
+                                {% if event.use_voice %}[声紋{% endif %}
+                                {% if event.use_gps %}[GPS]{% endif %}
+                                {% if event.use_bt %}[蓝牙]{% endif %}
+                            </h2>
+                            <p>
+                                {{event.dt_start.strftime("%Y/%m/%d %H:%M")}}
+                                ~
+                                {{event.dt_end.strftime("%Y/%m/%d %H:%M")}}
+                            </p>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

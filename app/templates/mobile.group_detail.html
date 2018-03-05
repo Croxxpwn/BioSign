@@ -45,50 +45,25 @@
                    class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新活动</a>
                 {% endif %}
                 <h1>活动信息</h1>
-                {% for event in group.events[::-1] %}
-                {% if own %}
-                <a href="/mobile/event/{{event.id}}" class="ui-btn ui-corner-all ui-shadow">
-                    {{event.name}}&nbsp;
-                    验证方式:
-                    {% if event.use_face %}[人脸]{% endif %}
-                    {% if event.use_voice %}[声紋{% endif %}
-                    {% if event.use_gps %}[GPS]{% endif %}
-                    {% if event.use_bt %}[蓝牙]{% endif %}
-                    <br>
-                    开始时间:{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}
-                    <br>
-                    结束时间:{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}
-                </a>
-                {% else %}
-                {% if current_user.hasSignedEvent(event) %}
-                <a href="#" class="ui-btn ui-corner-all ui-shadow">
-                    {{event.name}}&nbsp;
-                    验证方式:
-                    {% if event.use_face %}[人脸]{% endif %}
-                    {% if event.use_voice %}[声紋{% endif %}
-                    {% if event.use_gps %}[GPS]{% endif %}
-                    {% if event.use_bt %}[蓝牙]{% endif %}
-                    <br>
-                    开始时间:{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}
-                    <br>
-                    结束时间:{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}
-                </a>
-                {% else %}
-                <a href="/mobile/event/{{event.id}}/sign" class="ui-btn ui-corner-all ui-shadow">
-                    {{event.name}}&nbsp;
-                    验证方式:
-                    {% if event.use_face %}[人脸]{% endif %}
-                    {% if event.use_voice %}[声紋{% endif %}
-                    {% if event.use_gps %}[GPS]{% endif %}
-                    {% if event.use_bt %}[蓝牙]{% endif %}
-                    <br>
-                    开始时间:{{event.dt_start.strftime("%Y-%m-%d %H:%M:%S")}}
-                    <br>
-                    结束时间:{{event.dt_end.strftime("%Y-%m-%d %H:%M:%S")}}
-                </a>
-                {% endif %}
-                {% endif %}
-                {% endfor %}
+                <ul data-role="listview" data-inset="true">
+                    {% for event in group.events[::-1] %}
+                    <li>
+                        <img src="/static/mobile/img/sign.jpeg"/>
+                        <h2>{{event.name}}
+                            验证方式:
+                            {% if event.use_face %}[人脸]{% endif %}
+                            {% if event.use_voice %}[声紋{% endif %}
+                            {% if event.use_gps %}[GPS]{% endif %}
+                            {% if event.use_bt %}[蓝牙]{% endif %}
+                        </h2>
+                        <p>
+                            {{event.dt_start.strftime("%Y/%m/%d %H:%M")}}
+                            ~
+                            {{event.dt_end.strftime("%Y/%m/%d %H:%M")}}
+                        </p>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
 
         </div>

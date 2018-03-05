@@ -693,4 +693,18 @@ def mobile_sign_before():
 @csrf_required
 @login_required
 def mobile_sign():
-    return redirect(url_for("mobile_index"))
+    user = User.query.filter(User.id == current_user.id).first()
+    groups = user.groups_sign.all()
+    events = []
+    for group in groups:
+        for event in group.events:
+            events.append(event)
+    # events = sorted(events, key=lambda x: x.dt_start)
+    events_signing = []
+    dt_now = datetime.now()
+    for event in events:
+        if dt_now > event.dt_start and dt_now < event.dt_end:
+            events_signing.append(event)
+    events_all = sorted(events, key=lambda x: x.dt_end)
+    events_signing = sorted(events_signing, key=lambda x: x.dt_start)
+    return render_template("mobile.signlist.html", events_all=events_all, events_signing=events_signing)
