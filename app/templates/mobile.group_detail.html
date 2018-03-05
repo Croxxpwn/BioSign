@@ -47,6 +47,21 @@
                 <h1>活动信息</h1>
                 <ul data-role="listview" data-inset="true">
                     {% for event in group.events[::-1] %}
+                    {% if own %}
+                    <li>
+                        <a src="/mobile/event/{{event.id}}">
+                            <img src="/static/mobile/img/sign.jpeg"/>
+                            <h3>
+                                {{event.name}}
+                            </h3>
+                            <p>
+                                {{event.dt_start.strftime("%m/%d %H:%M")}}
+                                ~
+                                {{event.dt_end.strftime("%m/%d %H:%M")}}
+                            </p>
+                        </a>
+                    </li>
+                    {% else %}
                     <li>
                         <img src="/static/mobile/img/sign.jpeg"/>
                         <h3>
@@ -58,6 +73,7 @@
                             {{event.dt_end.strftime("%m/%d %H:%M")}}
                         </p>
                     </li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
             </div>

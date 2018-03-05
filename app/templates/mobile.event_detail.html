@@ -1,0 +1,90 @@
+{% extends "mobile.base.html" %}
+
+{% block head %}
+<script src="/static/mobile/ChartJS/Chart.bundle.min.js"></script>
+<title>Biosign Mobile首页</title>
+{% endblock %}
+
+
+{% block content %}
+
+
+<div data-role="main" class="ui-content">
+    <div class="ui-grid-solo">
+        <div class="ui_block-a">
+            <div data-role="collapsible" data-collapsed="false">
+                <h1>基本信息</h1>
+                <p>活动名:{{event.name}}</p>
+                <p>所属小组:{{event.group.name}}</p>
+                <p>签到时间:{{event.dt_start.strftime("%m/%d %H:%M")}}~{{event.dt_end.strftime("%m/%d %H:%M")}}</p>
+            </div>
+        </div>
+        <div class="ui_block-a">
+            <div data-role="collapsible" data-collapsed="false">
+                <h1>签到反馈</h1>
+                <canvas id="canvas_amount" width="100%" height="60%"></canvas>
+                <canvas id="canvas_minutes10" width="100%" height="60%"></canvas>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var ctx_minutes10 = $("#canvas_minutes10");
+        var ctx_amount = $("#canvas_amount");
+        jsondata = '{{ jsondata|safe }}';
+        jsondata = JSON.parse(jsondata);
+        data_minutes10 = {
+            labels: jsondata.label,
+            datasets: [
+                {
+                    label: "每10分钟签到人数",
+                    backgroundColor: "rgba(151,187,205,0.2)",
+                    borderColor: "rgba(151,187,205,1)",
+                    data: jsondata.minutes10_count
+                },
+                {
+                    label: "每10分钟累计人数",
+                    backgroundColor: "rgba(220,220,220,0.2)",
+                    borderColor: "rgba(220,220,220,1)",
+                    data: jsondata.minutes10_sum
+                }
+            ]
+        };
+        var chart_minutes10 = new Chart(ctx_minutes10,
+            {
+                type: 'line',
+                data: data_minutes10,
+                options: {}
+            });
+        data_amount = {
+            datasets: [{
+                data: [
+                    jsondata.amount_pass,
+                    jsondata.amount_all - jsondata.amount_pass,
+                    jsondata.amount_signer - jsondata.amount_all
+                ],
+                backgroundColor: [
+                    "#46BFBD",
+                    "#FDB45C",
+                    "#F7464A"
+                ]
+            }],
+            labels: [
+                '签到成功',
+                '签到失败',
+                '未签到'
+            ]
+        };
+        var chart_amount = new Chart(ctx_amount,
+            {
+                type: 'doughnut',
+                data: data_amount,
+                options: {}
+            });
+    });
+</script>
+
+{% endblock %}

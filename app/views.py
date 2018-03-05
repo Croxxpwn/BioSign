@@ -9,10 +9,11 @@ from functools import wraps
 from app.userutils import *
 from app.verify import *
 import json, base64
+from collections import defaultdict
 
 # Configs and View for Login
 
-lm.login_view = 'login'
+lm.login_view = 'mobile_login'
 lm.login_message = u'W请先登录!'
 
 
@@ -699,7 +700,6 @@ def mobile_sign():
     for group in groups:
         for event in group.events:
             events.append(event)
-    # events = sorted(events, key=lambda x: x.dt_start)
     events_signing = []
     dt_now = datetime.now()
     for event in events:
@@ -708,3 +708,55 @@ def mobile_sign():
     events_all = sorted(events, key=lambda x: x.dt_end)
     events_signing = sorted(events_signing, key=lambda x: x.dt_start)
     return render_template("mobile.signlist.html", events_all=events_all, events_signing=events_signing)
+
+
+@app.route('/mobile/event/<eid>')
+@csrf_required
+@login_required
+def mobile_event(eid):
+    user = User.query.filter(User.id == current_user.id).first()
+    event = Event.query.filter(Event.id == eid).first()
+    if event is None:
+        abort(404)
+    if event.group.leader_id != user.id:
+        abort(403)
+    signs_all = event.signs
+    signs_pass = []
+    # 统计总数与通过数
+    amount_signer = event.group.signers.count()
+    amount_all = len(signs_all)
+    amount_pass = 0
+    for sign in signs_all:
+        if sign.isPass():
+            signs_pass.append(sign)
+            amount_pass += 1
+    minutes10_count = defaultdict(int)  # 每10分钟签到数
+    minutes10_sum = defaultdict(int)  # 每10分钟签到累计数
+    minutes10_max = 0  # 最大10分钟单位
+    for sign in signs_pass:
+        delta = sign.dt_sign - event.dt_start
+        seconds = delta.seconds
+        minutes10 = seconds // 600
+        if minutes10 > minutes10_max:
+            minutes10_max = minutes10
+    for sign in signs_pass:
+        delta = sign.dt_sign - event.dt_start
+        seconds = delta.seconds
+        minutes10 = seconds // 600
+        minutes10_count[minutes10] += 1
+        for i in range(minutes10, minutes10_max + 1):
+            minutes10_sum[i] += 1
+    minutes10_count_list = [minutes10_count[i] for i in range(minutes10_max + 1)]
+    minutes10_sum_list = [minutes10_sum[i] for i in range(minutes10_max + 1)]
+    jsondata = {
+        "amount_signer": amount_signer,
+        "amount_all": amount_all,
+        "amount_pass": amount_pass,
+        "minutes10_count": minutes10_count_list,
+        "minutes10_sum": minutes10_sum_list,
+        "minutes10_max": minutes10_max,
+        "minutes10_label": [i * 10 for i in range(minutes10_max + 1)],
+    }
+    jsondata = json.dumps(jsondata)
+    print(jsondata)
+    return render_template("mobile.event_detail.html", jsondata=jsondata, event=event)
