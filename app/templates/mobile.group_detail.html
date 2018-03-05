@@ -49,17 +49,13 @@
                     {% for event in group.events[::-1] %}
                     <li>
                         <img src="/static/mobile/img/sign.jpeg"/>
-                        <h2>{{event.name}}
-                            验证方式:
-                            {% if event.use_face %}[人脸]{% endif %}
-                            {% if event.use_voice %}[声紋{% endif %}
-                            {% if event.use_gps %}[GPS]{% endif %}
-                            {% if event.use_bt %}[蓝牙]{% endif %}
-                        </h2>
+                        <h3>
+                            {{event.name}}
+                        </h3>
                         <p>
-                            {{event.dt_start.strftime("%Y/%m/%d %H:%M")}}
+                            {{event.dt_start.strftime("%m/%d %H:%M")}}
                             ~
-                            {{event.dt_end.strftime("%Y/%m/%d %H:%M")}}
+                            {{event.dt_end.strftime("%m/%d %H:%M")}}
                         </p>
                     </li>
                     {% endfor %}
