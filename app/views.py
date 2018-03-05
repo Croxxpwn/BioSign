@@ -605,7 +605,39 @@ def mobile_group_detail(gid):
         own = False
     else:
         abort(403)
-    return render_template('mobile.group_detail.html', own=own, group=group)
+
+    events = sorted(group.events, key=lambda event: event.dt_start)
+    count_signers = group.signers.count()
+    count_pass = [len(event.signs) for event in events]
+    rate_sign = [x / count_signers for x in count_pass]
+    rate_labels = [event.name for event in events]
+    count_face = 0
+    count_voice = 0
+    count_bt = 0
+    for event in events:
+        if event.use_face:
+            count_face += 1
+        if event.use_voice:
+            count_voice += 1
+        if event.use_bt:
+            count_bt += 1
+    rate_face = count_face / len(events) if len(events) != 0 else 0
+    rate_voice = count_voice / len(events) if len(events) != 0 else 0
+    rate_bt = count_bt / len(events) if len(events) != 0 else 0
+    rate_sign_ava = 0
+    for rate in rate_sign:
+        rate_sign_ava += rate
+    rate_sign_ava = rate_sign_ava / len(events) if len(events) != 0 else 0
+    jsondata = {
+        'rate_sign': rate_sign,
+        'rate_labels': rate_labels,
+        'rate_face': rate_face,
+        'rate_voice': rate_voice,
+        'rate_bt': rate_bt,
+        'rate_sign_ava': rate_sign_ava,
+    }
+    jsondata = json.dumps(jsondata)
+    return render_template('mobile.group_detail.html', own=own, group=group, jsondata=jsondata)
 
 
 @app.route('/mobile/group/<gid>/event/new', methods=['GET', 'POST'])
@@ -663,7 +695,6 @@ def mobile_event_sign(eid):
     sign = Sign.query.filter(Sign.signer_id == user.id).filter(Sign.event_id == event.id).first()
     if sign is None:
         sign = Sign(event, user)
-    # print(sign.isPassFace(), sign.isPassVoice(), sign.isPassBT())
     if sign.isPass():
         return redirect(url_for("mobile_sign_sucess"))
     return render_template("mobile.sign.html", sign=sign)
@@ -732,22 +763,35 @@ def mobile_event(eid):
             amount_pass += 1
     minutes10_count = defaultdict(int)  # 每10分钟签到数
     minutes10_sum = defaultdict(int)  # 每10分钟签到累计数
-    minutes10_max = 0  # 最大10分钟单位
+    minutes10_max = 0  # 最大1分钟单位
+    minutes1_count = defaultdict(int)  # 每1分钟签到数
+    minutes1_sum = defaultdict(int)  # 每1分钟签到累计数
+    minutes1_max = 0  # 最大1分钟单位
     for sign in signs_pass:
         delta = sign.dt_sign - event.dt_start
         seconds = delta.seconds
         minutes10 = seconds // 600
+        minutes1 = seconds // 60
         if minutes10 > minutes10_max:
             minutes10_max = minutes10
+        if minutes1 > minutes1_max:
+            minutes1_max = minutes1
     for sign in signs_pass:
         delta = sign.dt_sign - event.dt_start
         seconds = delta.seconds
         minutes10 = seconds // 600
+        minutes1 = seconds // 60
         minutes10_count[minutes10] += 1
+        minutes1_count[minutes1] += 1
         for i in range(minutes10, minutes10_max + 1):
             minutes10_sum[i] += 1
+        for i in range(minutes1, minutes1_max + 1):
+            minutes1_sum[i] += 1
     minutes10_count_list = [minutes10_count[i] for i in range(minutes10_max + 1)]
     minutes10_sum_list = [minutes10_sum[i] for i in range(minutes10_max + 1)]
+    minutes1_count_list = [minutes1_count[i] for i in range(minutes1_max + 1)]
+    minutes1_sum_list = [minutes1_sum[i] for i in range(minutes1_max + 1)]
+    signers = [sign.signer for sign in signs_pass]
     jsondata = {
         "amount_signer": amount_signer,
         "amount_all": amount_all,
@@ -756,7 +800,76 @@ def mobile_event(eid):
         "minutes10_sum": minutes10_sum_list,
         "minutes10_max": minutes10_max,
         "minutes10_label": [i * 10 for i in range(minutes10_max + 1)],
+        "minutes1_count": minutes1_count_list,
+        "minutes1_sum": minutes1_sum_list,
+        "minutes1_max": minutes1_max,
+        "minutes1_label": [i * 1 for i in range(minutes1_max + 1)],
     }
     jsondata = json.dumps(jsondata)
-    print(jsondata)
-    return render_template("mobile.event_detail.html", jsondata=jsondata, event=event)
+    return render_template("mobile.event_detail.html", jsondata=jsondata, event=event, signers=signers)
+
+
+@app.route('/mobile/user/<uid>/group/<gid>')
+@csrf_required
+@login_required
+def mobile_user_group(uid, gid):
+    user = User.query.filter(User.id == current_user.id).first()
+    group = Group.query.filter(Group.id == gid).first()
+    signer = User.query.filter(User.id == uid).first()
+    if group is None or signer is None:
+        abort(404)
+    if not signer.isSigned(group) or group.leader_id != user.id:
+        abort(403)
+    events_sign = []
+    events_unsign = []
+    tdelta = timedelta(0)
+    times_face = 0
+    times_voice = 0
+    times_bt = 0
+    count_face = 0
+    count_voice = 0
+    count_bt = 0
+    events = sorted(group.events, key=lambda event: event.dt_start)
+    for event in events:
+        if event.use_face:
+            count_face += 1
+        if event.use_voice:
+            count_voice += 1
+        if event.use_bt:
+            count_bt += 1
+        sign = Sign.query.filter(Sign.signer_id == signer.id).filter(Sign.event_id == event.id).first()
+        if sign is None:
+            events_unsign.append(event)
+        else:
+            if not sign.isPass():
+                events_unsign.append(event)
+            else:
+                tdelta += sign.dt_sign - event.dt_start
+                if sign.isPassFace():
+                    times_face += 1
+                if sign.isPassVoice():
+                    times_voice += 1
+                if sign.isPassBT():
+                    times_bt += 1
+                events_sign.append(event)
+    rate_sign = len(events_sign) / (len(events_sign) + len(events_unsign)) if (len(events_sign) + len(
+        events_unsign)) != 0 else 0
+    tdelta = tdelta.seconds / 60
+    if tdelta > 10:
+        tdelta = 0
+    else:
+        tdelta = 10 - tdelta
+    rate_tdelta = tdelta / 10
+    rate_face = times_face / count_face if count_face != 0 else 0
+    rate_voice = times_voice / count_voice if count_voice != 0 else 0
+    rate_bt = times_bt / count_bt if count_bt != 0 else 0
+    jsondata = {
+        'rate_sign': rate_sign,
+        'rate_tdelta': rate_tdelta,
+        'rate_face': rate_face,
+        'rate_voice': rate_voice,
+        'rate_bt': rate_bt,
+    }
+    jsondata = json.dumps(jsondata)
+    return render_template("mobile.user_group.html", signer=signer, jsondata=jsondata,
+                           events_sign=events_sign, events_unsign=events_unsign)

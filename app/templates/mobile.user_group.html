@@ -11,31 +11,21 @@
 
 <div data-role="main" class="ui-content">
     <div class="ui-grid-solo">
-        <div class="ui-block-a">
+        <div class="ui_block-a">
             <div data-role="collapsible" data-collapsed="false">
                 <h1>基本信息</h1>
-                <p>小组名:{{group.name}}</p>
-                <p>类型:{% if group.type==0 %}其他{% elif
-                    group.type==1 %}课程{% elif group.type==2 %}活动{% endif %}</p>
-                <p>组长:{{group.leader.name}}</p>
-                <p>组长邮箱:{{group.leader.email}}</p>
+                <p>用户名:{{signer.name}}</p>
+                <p>邮箱:{{signer.email}}</p>
             </div>
-
+        </div>
+        <div class="ui_block-a">
             <div data-role="collapsible" data-collapsed="false">
-                <h1>签到反馈</h1>
-                <canvas id="canvas_userate" width="100%" height="60%"></canvas>
+                <h1>出勤概况</h1>
                 <canvas id="canvas_rate" width="100%" height="60%"></canvas>
                 <br>
-            </div>
-            <div data-role="collapsible" data-collapsed="false">
-                {% if own %}
-                <a href="/mobile/group/{{group.id}}/event/new"
-                   class="ui-btn ui-corner-all ui-shadow ui-icon-plus" data-ajax="false">创建新活动</a>
-                {% endif %}
-                <h1>活动信息</h1>
+                <h2>出勤的活动</h2>
                 <ul data-role="listview" data-inset="true">
-                    {% for event in group.events[::-1] %}
-                    {% if own %}
+                    {% for event in events_sign %}
                     <li>
                         <a href="/mobile/event/{{event.id}}" data-ajax="false">
                             <img src="/static/mobile/img/sign.jpeg"/>
@@ -49,9 +39,13 @@
                             </p>
                         </a>
                     </li>
-                    {% else %}
+                    {% endfor %}
+                </ul>
+                <h2>未出勤活动</h2>
+                <ul data-role="listview" data-inset="true">
+                    {% for event in events_unsign %}
                     <li>
-                        <a href="#">
+                        <a href="/mobile/event/{{event.id}}" data-ajax="false">
                             <img src="/static/mobile/img/sign.jpeg"/>
                             <h3>
                                 {{event.name}}
@@ -63,60 +57,28 @@
                             </p>
                         </a>
                     </li>
-                    {% endif %}
                     {% endfor %}
                 </ul>
-            </div>
-            <div data-role="collapsible" data-collapsed="false">
-                <h1>成员信息</h1>
-                <ul data-role="listview" data-inset="true">
-                    {% for signer in group.signers %}
-                    <li>
-                        <a href="/mobile/user/{{signer.id}}/group/{{group.id}}" data-ajax="false">
-                            <h3>{{signer.name}}</h3>
-                            <p>{{signer.email}}</p>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
 
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     $(document).ready(function () {
-        var ctx_userate = $("#canvas_userate");
         var ctx_rate = $("#canvas_rate");
 
         jsondata = '{{ jsondata|safe }}';
         jsondata = JSON.parse(jsondata);
 
         data_rate = {
-            labels: jsondata.rate_labels,
-            datasets: [
-                {
-                    label: "出勤率",
-                    backgroundColor: "rgba(151,187,205,0.2)",
-                    borderColor: "rgba(151,187,205,1)",
-                    data: jsondata.rate_sign
-                }
-            ]
-        };
-        var chart_rate = new Chart(ctx_rate,
-            {
-                type: 'line',
-                data: data_rate,
-                options: {}
-            });
-
-        data_userate = {
-            labels: ['出勤率', '人脸使用率', '声紋使用率', '蓝牙使用率'],
+            labels: ['出勤率', '出勤速度', '人脸通过率', '声紋通过率', '蓝牙通过率'],
             datasets: [
                 {
                     data: [
                         jsondata.rate_sign_ava,
+                        jsondata.rate_tdelta,
                         jsondata.rate_face,
                         jsondata.rate_voice,
                         jsondata.rate_bt
@@ -125,12 +87,13 @@
             ]
         };
 
-        var chart_userate = new Chart(ctx_userate,
+        var chart_rate = new Chart(ctx_rate,
             {
                 type: 'radar',
-                data: data_userate,
+                data: data_rate,
                 options: {}
             });
     });
 </script>
+
 {% endblock %}

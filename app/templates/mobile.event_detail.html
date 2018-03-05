@@ -23,42 +23,38 @@
             <div data-role="collapsible" data-collapsed="false">
                 <h1>签到反馈</h1>
                 <canvas id="canvas_amount" width="100%" height="60%"></canvas>
+                <br>
+                <canvas id="canvas_minutes1" width="100%" height="60%"></canvas>
+                <br>
                 <canvas id="canvas_minutes10" width="100%" height="60%"></canvas>
+                <br>
             </div>
-
+        </div>
+        <div class="ui_block-a">
+            <div data-role="collapsible" data-collapsed="false">
+                <h1>签到名单</h1>
+                <ul data-role="listview" data-inset="true">
+                    {% for signer in signers %}
+                    <li>
+                        <h3>{{signer.name}}</h3>
+                        <p>{{signer.email}}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     $(document).ready(function () {
-        var ctx_minutes10 = $("#canvas_minutes10");
         var ctx_amount = $("#canvas_amount");
+        var ctx_minutes1 = $("#canvas_minutes1");
+        var ctx_minutes10 = $("#canvas_minutes10");
+
         jsondata = '{{ jsondata|safe }}';
         jsondata = JSON.parse(jsondata);
-        data_minutes10 = {
-            labels: jsondata.label,
-            datasets: [
-                {
-                    label: "每10分钟签到人数",
-                    backgroundColor: "rgba(151,187,205,0.2)",
-                    borderColor: "rgba(151,187,205,1)",
-                    data: jsondata.minutes10_count
-                },
-                {
-                    label: "每10分钟累计人数",
-                    backgroundColor: "rgba(220,220,220,0.2)",
-                    borderColor: "rgba(220,220,220,1)",
-                    data: jsondata.minutes10_sum
-                }
-            ]
-        };
-        var chart_minutes10 = new Chart(ctx_minutes10,
-            {
-                type: 'line',
-                data: data_minutes10,
-                options: {}
-            });
+
         data_amount = {
             datasets: [{
                 data: [
@@ -84,6 +80,55 @@
                 data: data_amount,
                 options: {}
             });
+
+        data_minutes1 = {
+            labels: jsondata.minutes1_label,
+            datasets: [
+                {
+                    label: "每1分钟签到人数",
+                    backgroundColor: "rgba(151,187,205,0.2)",
+                    borderColor: "rgba(151,187,205,1)",
+                    data: jsondata.minutes1_count
+                },
+                {
+                    label: "每1分钟累计人数",
+                    backgroundColor: "rgba(220,220,220,0.2)",
+                    borderColor: "rgba(220,220,220,1)",
+                    data: jsondata.minutes1_sum
+                }
+            ]
+        };
+        var chart_minutes1 = new Chart(ctx_minutes1,
+            {
+                type: 'line',
+                data: data_minutes1,
+                options: {}
+            });
+
+        data_minutes10 = {
+            labels: jsondata.minutes10_label,
+            datasets: [
+                {
+                    label: "每10分钟签到人数",
+                    backgroundColor: "rgba(151,187,205,0.2)",
+                    borderColor: "rgba(151,187,205,1)",
+                    data: jsondata.minutes10_count
+                },
+                {
+                    label: "每10分钟累计人数",
+                    backgroundColor: "rgba(220,220,220,0.2)",
+                    borderColor: "rgba(220,220,220,1)",
+                    data: jsondata.minutes10_sum
+                }
+            ]
+        };
+        var chart_minutes10 = new Chart(ctx_minutes10,
+            {
+                type: 'line',
+                data: data_minutes10,
+                options: {}
+            });
+
     });
 </script>
 
