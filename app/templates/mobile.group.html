@@ -14,39 +14,51 @@
             <div data-role="collapsible" data-collapsed="false">
                 <h1>我创建的</h1>
                 <a href="/mobile/group/new" class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新小组</a>
-                {% for data_group in data_group_own %}
-                <a href="/mobile/group/{{data_group.gid}}"
-                   class="ui-btn ui-corner-all ui-shadow ui-icon-arrow-r ui-btn-icon-right">
-                    {{data_group.name}}&nbsp;
-                    组长:{{data_group.leader_name}}&nbsp;
-                    类型:
-                    {% if data_group.type==0 %}
-                    其他
-                    {% elif data_group.type==1 %}
-                    课程
-                    {% elif data_group.type==2 %}
-                    活动
-                    {% endif %}
-                </a>
-                {% endfor %}
+                <ul data-role="listview" data-inset="true">
+                    {% for data_group in data_group_own %}
+                    <li>
+                        <a href="/mobile/group/{{data_group.gid}}">
+                            <img src="/static/mobile/img/group.png"/>
+                            <h2>{{data_group.name}}</h2>
+                            <p>
+                                组长:{{data_group.leader_name}}&nbsp;
+                                类型:
+                                {% if data_group.type==0 %}
+                                其他
+                                {% elif data_group.type==1 %}
+                                课程
+                                {% elif data_group.type==2 %}
+                                活动
+                                {% endif %}
+                            </p>&nbsp;
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
             <div data-role="collapsible" data-collapsed="false">
                 <h1>我参加的</h1>
-                {% for data_group in data_group_sign %}
-                <a href="/mobile/group/{{data_group.gid}}"
-                   class="ui-btn ui-corner-all ui-shadow ui-icon-arrow-r ui-btn-icon-right">
-                    {{data_group.name}}&nbsp;
-                    组长:{{data_group.leader_name}}&nbsp;
-                    类型:
-                    {% if data_group.type==0 %}
-                    其他
-                    {% elif data_group.type==1 %}
-                    课程
-                    {% elif data_group.type==2 %}
-                    活动
-                    {% endif %}
-                </a>
-                {% endfor %}
+                <ul data-role="listview" data-inset="true">
+                    {% for data_group in data_group_sign %}
+                    <li>
+                        <a href="/mobile/group/{{data_group.gid}}">
+                            <img src="/static/mobile/img/group.png"/>
+                            <h2>{{data_group.name}}</h2>
+                            <p>
+                                组长:{{data_group.leader_name}}&nbsp;
+                                类型:
+                                {% if data_group.type==0 %}
+                                其他
+                                {% elif data_group.type==1 %}
+                                课程
+                                {% elif data_group.type==2 %}
+                                活动
+                                {% endif %}
+                            </p>&nbsp;
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
     </div>
