@@ -49,7 +49,7 @@
                     {% for event in group.events[::-1] %}
                     {% if own %}
                     <li>
-                        <a src="/mobile/event/{{event.id}}">
+                        <a href="/mobile/event/{{event.id}}">
                             <img src="/static/mobile/img/sign.jpeg"/>
                             <h3>
                                 {{event.name}}
@@ -63,7 +63,7 @@
                     </li>
                     {% else %}
                     <li>
-                        <a src="/mobile/event/{{event.id}}">
+                        <a href="#">
                             <img src="/static/mobile/img/sign.jpeg"/>
                             <h3>
                                 {{event.name}}
