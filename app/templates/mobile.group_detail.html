@@ -42,14 +42,14 @@
             <div data-role="collapsible" data-collapsed="false">
                 {% if own %}
                 <a href="/mobile/group/{{group.id}}/event/new"
-                   class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新活动</a>
+                   class="ui-btn ui-corner-all ui-shadow ui-icon-plus" data-ajax="false">创建新活动</a>
                 {% endif %}
                 <h1>活动信息</h1>
                 <ul data-role="listview" data-inset="true">
                     {% for event in group.events[::-1] %}
                     {% if own %}
                     <li>
-                        <a href="/mobile/event/{{event.id}}">
+                        <a href="/mobile/event/{{event.id}}" data-ajax="false">
                             <img src="/static/mobile/img/sign.jpeg"/>
                             <h3>
                                 {{event.name}}

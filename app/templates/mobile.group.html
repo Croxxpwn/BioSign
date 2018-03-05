@@ -13,11 +13,11 @@
         <div class="ui-block-a">
             <div data-role="collapsible" data-collapsed="false">
                 <h1>我创建的</h1>
-                <a href="/mobile/group/new" class="ui-btn ui-corner-all ui-shadow ui-icon-plus">创建新小组</a>
+                <a href="/mobile/group/new" class="ui-btn ui-corner-all ui-shadow ui-icon-plus" data-ajax="false">创建新小组</a>
                 <ul data-role="listview" data-inset="true">
                     {% for data_group in data_group_own %}
                     <li>
-                        <a href="/mobile/group/{{data_group.gid}}">
+                        <a href="/mobile/group/{{data_group.gid}}" data-ajax="false">
                             <img src="/static/mobile/img/group.png"/>
                             <h3>{{data_group.name}}</h3>
                             <p>
@@ -34,7 +34,7 @@
                 <ul data-role="listview" data-inset="true">
                     {% for data_group in data_group_sign %}
                     <li>
-                        <a href="/mobile/group/{{data_group.gid}}">
+                        <a href="/mobile/group/{{data_group.gid}}" data-ajax="false">
                             <img src="/static/mobile/img/group.png"/>
                             <h3>{{data_group.name}}</h3>
                             <p>

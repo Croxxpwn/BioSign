@@ -18,23 +18,23 @@
         </div>
         {% if current_user.is_authenticated %}
         <div class="ui-block-a">
-            <a href="/mobile/group" class="ui-btn ui-corner-all ui-shadow">我的小组</a><br>
-            <a href="/mobile/sign" class="ui-btn ui-corner-all ui-shadow">我的签到</a><br>
+            <a href="/mobile/group" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">我的小组</a><br>
+            <a href="/mobile/sign" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">我的签到</a><br>
         </div>
         <div class="ui-block-a">
             {% if not current_user.registedFace() %}
-            <a href="/mobile/register/face" class="ui-btn ui-corner-all ui-shadow">验证人脸</a><br>
+            <a href="/mobile/register/face" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">验证人脸</a><br>
             {% endif %}
             {% if not current_user.registedVoice() %}
-            <a href="/mobile/register/voice" class="ui-btn ui-corner-all ui-shadow">验证声紋</a><br>
+            <a href="/mobile/register/voice" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">验证声紋</a><br>
             {% endif %}
         </div>
         {% else %}
         <div class="ui-block-a">
-            <a href="/mobile/login" class="ui-btn ui-corner-all ui-shadow">登录</a><br>
+            <a href="/mobile/login" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">登录</a><br>
         </div>
         <div class="ui-block-a">
-            <a href="/mobile/signup" class="ui-btn ui-corner-all ui-shadow">注册</a><br>
+            <a href="/mobile/signup" class="ui-btn ui-corner-all ui-shadow" data-ajax="false">注册</a><br>
         </div>
         {% endif %}
     </div>
