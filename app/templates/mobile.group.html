@@ -22,9 +22,8 @@
                             <h3>{{data_group.name}}</h3>
                             <p>
                                 组长:{{data_group.leader_name}}
-                                类型:
-                                {% if data_group.type==0 %}其他{% elif data_group.type==1 %}课程{% elif data_group.type==2 %}活动{% endif %}
-                            </p>&nbsp;
+                                类型:{% if data_group.type==0 %}其他{% elif data_group.type==1 %}课程{% elif data_group.type==2 %}活动{% endif %}
+                            </p>
                         </a>
                     </li>
                     {% endfor %}
@@ -40,15 +39,8 @@
                             <h3>{{data_group.name}}</h3>
                             <p>
                                 组长:{{data_group.leader_name}}
-                                类型:
-                                {% if data_group.type==0 %}
-                                其他
-                                {% elif data_group.type==1 %}
-                                课程
-                                {% elif data_group.type==2 %}
-                                活动
-                                {% endif %}
-                            </p>&nbsp;
+                                类型:{% if data_group.type==0 %}其他{% elif data_group.type==1 %}课程{% elif data_group.type==2 %}活动{% endif %}
+                            </p>
                         </a>
                     </li>
                     {% endfor %}
