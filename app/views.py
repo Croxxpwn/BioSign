@@ -612,7 +612,12 @@ def mobile_group_detail(gid):
 
     events = sorted(group.events, key=lambda event: event.dt_start)
     count_signers = group.signers.count()
-    count_pass = [len(event.signs) for event in events]
+    count_pass = [0] * len(events)
+    for i,event in zip(range(len(events)),events):
+        for sign in event.signs:
+            if sign.isPass():
+                count_pass[i] += 1
+    # count_pass = [len(event.signs) for event in events]
     rate_sign = [x / count_signers for x in count_pass]
     rate_labels = [event.name for event in events]
     count_face = 0
