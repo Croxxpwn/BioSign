@@ -445,7 +445,7 @@ def mobile_ajax_auth_face():
     abspath = os.path.join(os.getcwd(), path)
     modelpath = os.path.join(os.getcwd(), 'app/res/' + str(user.id) + '/face.jpg')
     confidence = verifyFace(abspath, modelpath)
-    if confidence > 0.9:
+    if confidence > 0.85:
         sign.passFace()
         return getJsonResponse(STATUS_SUCCESS, None)
     else:
