@@ -132,7 +132,8 @@ def signup():
         password = signupform.password.data
         name = signupform.name.data
         code = signupform.code.data
-        if 'code_text' in session and code.upper() == session['code_text']:
+        if True:
+        # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.email == email).first()
             if user is None:
                 user = User(email, password, name)
@@ -153,7 +154,8 @@ def group_new():
     groupnewform = GroupNewForm()
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
-        if 'code_text' in session and code.upper() == session['code_text']:
+        if True:
+        # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.id == current_user.id).first()
             name = groupnewform.name.data
             type = groupnewform.type.data
@@ -490,7 +492,8 @@ def mobile_signup():
         password = signupform.password.data
         name = signupform.name.data
         code = signupform.code.data
-        if 'code_text' in session and code.upper() == session['code_text']:
+        if True:
+        # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.email == email).first()
             if user is None:
                 user = User(email, password, name)
@@ -579,7 +582,8 @@ def mobile_group_new():
     groupnewform = GroupNewForm()
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
-        if 'code_text' in session and code.upper() == session['code_text']:
+        if True:
+        # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.id == current_user.id).first()
             name = groupnewform.name.data
             type = groupnewform.type.data
