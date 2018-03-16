@@ -27,6 +27,7 @@ def verifyVoice(modelPath,samplePath):
     cmd = '%s %s %s' %(bin,modelPath,samplePath)
     pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,cwd=path)
     confidence = pipe.stdout.read()
+    print(confidence)
     try:
         confidence = float(confidence)
     except:
