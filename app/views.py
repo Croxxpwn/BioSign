@@ -133,7 +133,7 @@ def signup():
         name = signupform.name.data
         code = signupform.code.data
         if True:
-        # if 'code_text' in session and code.upper() == session['code_text']:
+            # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.email == email).first()
             if user is None:
                 user = User(email, password, name)
@@ -155,7 +155,7 @@ def group_new():
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
         if True:
-        # if 'code_text' in session and code.upper() == session['code_text']:
+            # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.id == current_user.id).first()
             name = groupnewform.name.data
             type = groupnewform.type.data
@@ -493,7 +493,7 @@ def mobile_signup():
         name = signupform.name.data
         code = signupform.code.data
         if True:
-        # if 'code_text' in session and code.upper() == session['code_text']:
+            # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.email == email).first()
             if user is None:
                 user = User(email, password, name)
@@ -583,7 +583,7 @@ def mobile_group_new():
     if groupnewform.validate_on_submit():
         code = groupnewform.code.data
         if True:
-        # if 'code_text' in session and code.upper() == session['code_text']:
+            # if 'code_text' in session and code.upper() == session['code_text']:
             user = User.query.filter(User.id == current_user.id).first()
             name = groupnewform.name.data
             type = groupnewform.type.data
@@ -613,7 +613,7 @@ def mobile_group_detail(gid):
     events = sorted(group.events, key=lambda event: event.dt_start)
     count_signers = group.signers.count()
     count_pass = [0] * len(events)
-    for i,event in zip(range(len(events)),events):
+    for i, event in zip(range(len(events)), events):
         for sign in event.signs:
             if sign.isPass():
                 count_pass[i] += 1
@@ -768,7 +768,11 @@ def mobile_sign():
     dt_now = datetime.now()
     for event in events:
         if dt_now > event.dt_start and dt_now < event.dt_end:
-            events_signing.append(event)
+            sign = Sign.query.filter(Sign.event_id == event.id).filter(Sign.signer_id == user.id).first()
+            if sign is None:
+                events_signing.append(event)
+            elif not sign.isPass():
+                events_signing.append(event)
     events_all = sorted(events, key=lambda x: x.dt_end)
     events_signing = sorted(events_signing, key=lambda x: x.dt_start)
     return render_template("mobile.signlist.html", events_all=events_all, events_signing=events_signing)
