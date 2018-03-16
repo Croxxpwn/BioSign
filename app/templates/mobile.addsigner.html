@@ -14,7 +14,7 @@
                 {{addsignerform.hidden_tag()}}
                 <label for="email">邮箱:</label>
                 <input type="email" name="email" id="email" required>
-                <input type="submit" class="ui-btn ui-corner-all ui-shadow" data-ajax="false" value="注册">
+                <input type="submit" class="ui-btn ui-corner-all ui-shadow" value="添加成员">
             </form>
             {% for message in get_flashed_messages() %}
             <p style="color: #F00;">{{message}}</p>
