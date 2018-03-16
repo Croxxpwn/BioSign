@@ -150,3 +150,13 @@ class AdvancedSignupForm(FlaskForm):
             Length(4, 4, message='请输入4位验证码！')
         ]
     )
+
+class AddSignerForm(FlaskForm):
+    email = StringField(
+        'email',
+        validators=[
+            DataRequired(message='请输入登录邮箱!'),
+            Length(1, 32, message='登录邮箱必须在1-32个字符内!'),
+            Email(message='请输入合法的邮箱帐号!')
+        ]
+    )

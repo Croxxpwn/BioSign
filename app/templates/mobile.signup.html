@@ -21,7 +21,7 @@
                 <img id="identifyingcode_img" src="#"/>
                 <label for="code">验证码:</label>
                 <input type="text" name="code" id="code" style="text-transform: uppercase">
-                <input type="submit" class="ui-btn ui-corner-all ui-shadow" value="注册">
+                <input type="submit" class="ui-btn ui-corner-all ui-shadow" data-ajax="false" value="注册">
             </form>
             {% for message in get_flashed_messages() %}
             <p style="color: #F00;">{{message}}</p>

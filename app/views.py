@@ -496,7 +496,7 @@ def mobile_signup():
                 user = User(email, password, name)
                 createUserSpace(user)
                 login_user(user, True)
-                return redirect(url_for('mobile_register'))
+                return redirect(url_for('mobile_index'))
             else:
                 flash(u'D该用户名已被注册!')
         else:
@@ -638,6 +638,30 @@ def mobile_group_detail(gid):
     }
     jsondata = json.dumps(jsondata)
     return render_template('mobile.group_detail.html', own=own, group=group, jsondata=jsondata)
+
+
+@app.route('/mobile/group/<gid>/addsigner', methods=['GET', 'POST'])
+@csrf_required
+@login_required
+def mobile_group_addsigner(gid):
+    user = User.query.filter(User.id == current_user.id).first()
+    group = Group.query.filter(Group.id == gid).first()
+    if group is None:
+        abort(404)
+    if group.leader_id != user.id:
+        abort(403)
+    addsignerform = AddSignerForm()
+    if addsignerform.validate_on_submit():
+        email = addsignerform.email.data
+        u = User.query.filter(User.email == email).first()
+        if u is None:
+            flash("用户不存在!")
+        elif u.isSigned(group):
+            flash("用户已在小组中!")
+        else:
+            group.signup(u)
+            return redirect(url_for('mobile_group_detail', gid=gid))
+    return render_template("mobile.addsigner.html", addsignerform=addsignerform)
 
 
 @app.route('/mobile/group/<gid>/event/new', methods=['GET', 'POST'])

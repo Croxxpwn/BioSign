@@ -246,9 +246,9 @@ class User(db.Model):
         self.name = name
         self.setPassword(password, update=False)
         self.time_submit = datetime.now()
-        self.update()
         self.registed_face = False
         self.registed_voice_times = 0
+        self.update()
 
     def update(self):
         db.session.add(self)

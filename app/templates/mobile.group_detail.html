@@ -70,6 +70,10 @@
             <div data-role="collapsible" data-collapsed="false">
                 <h1>成员信息</h1>
                 <ul data-role="listview" data-inset="true">
+                    {% if own %}
+                    <a href="/mobile/group/{{group.id}}/addsigner"
+                       class="ui-btn ui-corner-all ui-shadow ui-icon-plus" data-ajax="false">添加成员</a>
+                    {% endif %}
                     {% for signer in group.signers %}
                     <li>
                         <a href="/mobile/user/{{signer.id}}/group/{{group.id}}" data-ajax="false">
