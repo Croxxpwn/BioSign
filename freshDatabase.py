@@ -13,7 +13,7 @@ def createUserSpace(user):
 
 
 db.create_all()
-
+'''
 from app.models import *
 
 u = User('617154443@qq.com', '123456', '孟爻')
@@ -36,3 +36,4 @@ opts = {
     'bt_ssid': "F8:A4:5F:03:5E:3B",
 }
 e = Event(g, name, datetime.now(), datetime.now() + timedelta(days=1), opt=opts)
+'''

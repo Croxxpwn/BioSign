@@ -8,11 +8,11 @@ def verifyFace(samplePath,dataPath):
     cmd = '%s %s %s' %(bin,samplePath,dataPath)
     pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,cwd=path)
     confidence = pipe.stdout.read()
-    print(confidence)
     try:
         confidence = float(confidence)
     except:
         confidence = -1
+    print(confidence)
     return confidence
 
 def trainVoiceModel(sampleDirPath,modelPath):
@@ -29,11 +29,11 @@ def verifyVoice(modelPath,samplePath):
     cmd = '%s %s %s' %(bin,modelPath,samplePath)
     pipe = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,cwd=path)
     confidence = pipe.stdout.read()
-    print(confidence)
     try:
         confidence = float(confidence)
     except:
         confidence = -1
+    print(confidence)
     return confidence
 
 def verifyGPS():
