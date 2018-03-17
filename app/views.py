@@ -349,7 +349,7 @@ def mobile_ajax_register_face():
     file.close()
     abspath = os.path.join(os.getcwd(), path)
     confidence = verifyFace(abspath, abspath)
-    if confidence > 0.9:
+    if confidence > 0.85:
         newpath = os.path.join('app/res/' + str(user.id), "face.jpg")
         file = open(newpath, 'wb')
         file.write(imgdata)
